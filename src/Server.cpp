@@ -1,0 +1,125 @@
+
+#include "../include/Server.hpp"
+#include <arpa/inet.h>
+#include <cstddef>
+#include <iostream>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+
+Server::Server(int port, const std::string& password)
+	: _port(port), _password(password), _server_fd(-1)
+	{
+		initSocket();
+	}
+Server::~Server() {
+	cleanup();
+}
+
+void Server::initSocket() {
+	_server_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (_server_fd < 0) {
+	  perror("socket");
+	  exit(1);
+	}
+  
+	int opt = 1;
+	setsockopt(
+		_server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)); // allow re-binding after the socket closes without waiting
+  
+	sockaddr_in server_addr{};
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_addr.s_addr = INADDR_ANY;
+	server_addr.sin_port = htons(_port);
+  
+	if (bind(_server_fd, reinterpret_cast<sockaddr *>(&server_addr),
+			 sizeof(server_addr)) < 0) {
+	  perror("bind");
+	  exit(1);
+	}
+  
+	if (listen(_server_fd, 5) < 0) {
+	  perror("listen");
+	  exit(1);
+	}
+  
+	std::cout << "Server listening on port " << _port << std::endl;
+  
+	// prepare pollfd vector: first entry is the listening socket
+	pollfd listen_pollfd;
+	listen_pollfd.fd = _server_fd;
+	listen_pollfd.events = POLLIN; // request notification when ready to accept
+								   // (incoming connection) or has data to read
+	listen_pollfd.revents = 0;     // no events yet
+	_fds.push_back(listen_pollfd);  // created first entry
+}
+
+int Server::run() {
+	while (true) {
+		int ret = poll(_fds.data(), _fds.size(), -1);
+    if (ret < 0) {
+      perror("poll");
+      return 1;
+    }
+
+    for (size_t i = 0; i < _fds.size(); ++i) {
+      bool has_incoming_data = (_fds[i].revents & POLLIN);
+      if (!has_incoming_data)
+        continue;
+
+      if (_fds[i].fd == _server_fd) {
+		acceptNewClient();
+	  } else {
+		handleClientData(i);
+	  }
+	}
+}
+return 0;
+}
+
+void Server::acceptNewClient() {
+	// new connection from a client
+	sockaddr_in client_addr{};
+	socklen_t client_addr_len = sizeof(client_addr);
+	int client_fd =
+		accept(_server_fd, reinterpret_cast<sockaddr *>(&client_addr),
+			   &client_addr_len);
+	if (client_fd < 0) {
+	  perror("accept");
+	} else {
+	  char ip[16];
+	  inet_ntop(AF_INET, &client_addr.sin_addr, ip, sizeof(ip));
+	  std::cout << "New connection: " << ip << ":"
+				<< ntohs(client_addr.sin_port) << std::endl;
+	  pollfd client_pollfd;
+	  client_pollfd.fd = client_fd;
+	  client_pollfd.events = POLLIN;
+	  client_pollfd.revents = 0;
+	  _fds.push_back(client_pollfd);
+	}
+}
+      
+void Server::handleClientData(size_t idx)
+{
+	int fd = _fds[idx].fd;
+	// data from existing client
+	char buffer[512]; // 512 is max len of a single IRC message as per IRC 1459
+	int n = recv(fd, buffer, sizeof(buffer), 0); // recv is the network version of read()
+	if (n <= 0) {
+	  std::cout << "Client " << fd << " disconnected\n";
+	  close(fd);
+	  _fds.erase(_fds.begin() + idx);
+	} else {
+	  std::cout << "Received" << n << " bytes from client " << fd
+				<< std::endl;
+	  // we log that we received a message but we ignore the content for now
+	}
+}
+
+void Server::cleanup() {
+	for (auto& pfd : _fds) {
+		close(pfd.fd);
+	}
+	_fds.clear();
+}
+        
