@@ -93,6 +93,8 @@ void Server::acceptNewClient() {
 	  inet_ntop(AF_INET, &client_addr.sin_addr, ip, sizeof(ip));
 	  std::cout << "New connection: " << ip << ":"
 				<< ntohs(client_addr.sin_port) << std::endl;
+		_clients[client_fd] = Client(client_fd);
+
 	  pollfd client_pollfd;
 	  client_pollfd.fd = client_fd;
 	  client_pollfd.events = POLLIN;
@@ -110,14 +112,12 @@ void Server::handleClientData(size_t idx)
 	  std::cout << "Client " << fd << " disconnected\n";
 	  close(fd);
 	  _fds.erase(_fds.begin() + idx);
-	  _client_buffers.erase(fd);
+	  _clients.erase(fd);
 	  return;
 	} 
 
-	// std::string msg(buffer, n);
-	// Parser parser;
-	// auto cmds = parser.parse(msg);
-	auto& buf = _client_buffers[fd]; // creates empty string for the client at this fd
+	Client& client = _clients[fd];
+	std::string& buf = client.buffer(); 
 	buf.append(buffer, n); // now it's filled!
 
 	Parser parser;

@@ -1,4 +1,5 @@
 #pragma once
+#include "Client.hpp"
 #include <string>
 #include <vector>
 #include <poll.h>
@@ -27,7 +28,7 @@ private:
     std::string     _password;
 	int				_server_fd;
 	std::vector<pollfd> _fds;
-	std::unordered_map<int, std::string> _client_buffers;
+	std::unordered_map<int, Client> _clients;
 
 };
 
