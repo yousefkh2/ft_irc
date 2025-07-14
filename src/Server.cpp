@@ -3,6 +3,7 @@
 #include <arpa/inet.h>
 #include <cstddef>
 #include <iostream>
+#include <stdexcept>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -22,7 +23,7 @@ void Server::initSocket() {
 	_server_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_server_fd < 0) {
 	  perror("socket");
-	  exit(1);
+	  throw std::runtime_error("Failed to create socket");
 	}
   
 	int opt = 1;
@@ -37,12 +38,12 @@ void Server::initSocket() {
 	if (bind(_server_fd, reinterpret_cast<sockaddr *>(&server_addr),
 			 sizeof(server_addr)) < 0) {
 	  perror("bind");
-	  exit(1);
+	  throw std::runtime_error("Failed to bind socket");
 	}
   
 	if (listen(_server_fd, 5) < 0) {
 	  perror("listen");
-	  exit(1);
+	  throw std::runtime_error("Failed to listen on socket");
 	}
   
 	std::cout << "Server listening on port " << _port << std::endl;
