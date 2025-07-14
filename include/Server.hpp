@@ -4,6 +4,7 @@
 #include <vector>
 #include <poll.h>
 #include <unordered_map>
+#include "CommandHandler.hpp"
 
 
 class Server {
@@ -29,6 +30,6 @@ private:
 	int				_server_fd;
 	std::vector<pollfd> _fds;
 	std::unordered_map<int, Client> _clients;
-
+	CommandHandler		_handler;
 };
 

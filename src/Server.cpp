@@ -11,9 +11,9 @@
 #include "../include/Parser.hpp"
 
 Server::Server(int port, const std::string& password)
-	: _port(port), _password(password), _server_fd(-1)
+	: _port(port), _password(password), _server_fd(-1), _handler(password)
 	{
-		initSocket();
+		initSocket(); // later
 	}
 Server::~Server() {
 	cleanup();
@@ -128,6 +128,7 @@ void Server::handleClientData(size_t idx)
 	buf.erase(0, used); // erases from position 0 (beginning of string) up to position used (erases complete commands)
 	for (auto& cmd : cmds)
 	{
+		_handler.handle(client, cmd);
 		std::cout << "Parsed command: " << cmd.name;
 		if (!cmd.params.empty()) {
 			std::cout << " [";
