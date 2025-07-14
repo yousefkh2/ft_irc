@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <vector>
+#include "../include/Parser.hpp"
 
 Server::Server(int port, const std::string& password)
 	: _port(port), _password(password), _server_fd(-1)
@@ -102,17 +104,36 @@ void Server::acceptNewClient() {
 void Server::handleClientData(size_t idx)
 {
 	int fd = _fds[idx].fd;
-	// data from existing client
 	char buffer[512]; // 512 is max len of a single IRC message as per IRC 1459
 	int n = recv(fd, buffer, sizeof(buffer), 0); // recv is the network version of read()
 	if (n <= 0) {
 	  std::cout << "Client " << fd << " disconnected\n";
 	  close(fd);
 	  _fds.erase(_fds.begin() + idx);
-	} else {
-	  std::cout << "Received" << n << " bytes from client " << fd
-				<< std::endl;
-	  // we log that we received a message but we ignore the content for now
+	  _client_buffers.erase(fd);
+	  return;
+	} 
+
+	// std::string msg(buffer, n);
+	// Parser parser;
+	// auto cmds = parser.parse(msg);
+	auto& buf = _client_buffers[fd]; // creates empty string for the client at this fd
+	buf.append(buffer, n); // now it's filled!
+
+	Parser parser;
+	size_t used = 0;
+	std::vector<Command> cmds = parser.parse(buf, used);
+
+	buf.erase(0, used); // erases from position 0 (beginning of string) up to position used (erases complete commands)
+	for (auto& cmd : cmds)
+	{
+		std::cout << "Parsed command: " << cmd.name;
+		if (!cmd.params.empty()) {
+			std::cout << " [";
+			for (auto& p : cmd.params) std::cout << p << " ";
+			std::cout << "]";
+		}
+		std::cout << std::endl;
 	}
 }
 

@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <poll.h>
+#include <unordered_map>
 
 
 class Server {
@@ -26,6 +27,7 @@ private:
     std::string     _password;
 	int				_server_fd;
 	std::vector<pollfd> _fds;
+	std::unordered_map<int, std::string> _client_buffers;
 
 };
 

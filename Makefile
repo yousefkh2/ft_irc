@@ -10,14 +10,18 @@ SRCS = src/main.cpp \
        src/Parser.cpp \
        src/Utils.cpp
 
-OBJS = $(SRCS:.cpp=.o)
+OBJDIR = objs
+OBJS = $(SRCS:src/%.cpp=$(OBJDIR)/%.o)
+
+
 
 all: $(NAME)
 
 $(NAME): $(OBJS)
+	@mkdir -p $(OBJDIR)
 	$(CXX) $(INC) $(OBJS) -o $(NAME)
 
-%.o: %.cpp
+$(OBJDIR)/%.o: src/%.cpp
 	$(CXX) $(INC) -c $< -o $@
 
 clean:
