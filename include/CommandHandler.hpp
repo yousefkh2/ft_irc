@@ -1,9 +1,14 @@
 #pragma once
 #include <string>
+#include <unordered_map>
+#include <vector>
 #include "Client.hpp"
 #include "Command.hpp"
 
+using Params = std::vector<std::string>;
+
 class CommandHandler {
+	using CmdFn = void (CommandHandler::*)(Client&, const Params&);
 	public:
 	CommandHandler(const std::string& password);
 
@@ -18,5 +23,7 @@ class CommandHandler {
 	void handleNick(Client& client, const std::vector<std::string>& params);
 	void handleUser(Client& client, const std::vector<std::string>& params);
 
+
 	std::string _password;
+	static const std::unordered_map<std::string, CmdFn> _dispatch_table;
 };

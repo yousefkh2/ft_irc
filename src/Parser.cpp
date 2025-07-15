@@ -18,7 +18,7 @@ std::vector<Command> Parser::parse(std::string &data, size_t &used) {
 
     Command cmd;
     size_t i = 0;
-    // 1. optional prefxi
+    // 1. optional prefix
     if (line[i] == ':') {
 		size_t prefix_start = i + 1;
 		auto space_pos = line.find(' ', prefix_start);

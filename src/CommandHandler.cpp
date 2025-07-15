@@ -1,21 +1,44 @@
 #include "../include/CommandHandler.hpp"
+#include <cctype>
 #include <iostream>
+#include <string>
+#include <unordered_map>
 #include <vector>
+#include <algorithm>
+
+
+
+using Params = std::vector<std::string>;
+using CmdFn = void (CommandHandler::*)(Client&, const Params&);
+
+
+std::string toUpperIrc(std::string str) {
+	std::transform(str.begin(), str.end(), str.begin(), ::toupper);
+	return str;
+}
+
+/*
+better i think
+for (char& c : result)
+    c = std::toupper(c);
+*/
+
+const std::unordered_map<std::string, CmdFn> CommandHandler::_dispatch_table = {
+	{"PASS", &CommandHandler::handlePass},
+	{"NICK", &CommandHandler::handleNick},
+	{"USER", &CommandHandler::handleUser}
+};
 
 CommandHandler::CommandHandler(const std::string& password)
   : _password(password) {}
 
   void CommandHandler::handle(Client& client, const Command& cmd) {
 	std::cout << "Handler processing: " << cmd.name << std::endl;
-	if (cmd.name == "PASS") {
-		handlePass(client, cmd.params);
-	}
-	else if (cmd.name == "NICK") {
-		handleNick(client, cmd.params);
-	}
-	else if (cmd.name == "USER") {
-		handleUser(client, cmd.params);
-	}
+
+		auto it = _dispatch_table.find(toUpperIrc(cmd.name));
+		if (it != _dispatch_table.end()) {
+			(this->*it->second)(client, cmd.params);
+		}
 
 	if (client.isRegistered()) {
 		std::cout << "Client " << client.getFd()
@@ -30,7 +53,9 @@ CommandHandler::CommandHandler(const std::string& password)
 		}
 		if (params[0] == _password) {
 			client.setPassed(true);
-			std::cout << "Client " << client.getFd() << " bad PASS\n";
+			std::cout << "Client " << client.getFd() << " GOOD PASS\n";
+		} else {
+			std::cout << "Client " << client.getFd() << " BAD PASS\n";
 			// later: send ERR_PASSWDMISTMATCH and close
 		}
 	}

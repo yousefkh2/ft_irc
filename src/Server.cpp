@@ -41,7 +41,7 @@ void Server::initSocket() {
 	  throw std::runtime_error("Failed to bind socket");
 	}
   
-	if (listen(_server_fd, 5) < 0) {
+	if (listen(_server_fd, 5) < 128) {
 	  perror("listen");
 	  throw std::runtime_error("Failed to listen on socket");
 	}
