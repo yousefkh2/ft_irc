@@ -26,11 +26,12 @@ for (char& c : result)
 const std::unordered_map<std::string, CmdFn> CommandHandler::_dispatch_table = {
 	{"PASS", &CommandHandler::handlePass},
 	{"NICK", &CommandHandler::handleNick},
-	{"USER", &CommandHandler::handleUser}
+	{"USER", &CommandHandler::handleUser},
+	{"JOIN", &CommandHandler::handleJoin}
 };
 
-CommandHandler::CommandHandler(const std::string& password)
-  : _password(password) {}
+CommandHandler::CommandHandler(const std::string& password, Server* server)
+    : _password(password), _server(server) {}
 
   void CommandHandler::handle(Client& client, const Command& cmd) {
 	std::cout << "Handler processing: " << cmd.name << std::endl;
@@ -81,4 +82,12 @@ CommandHandler::CommandHandler(const std::string& password)
 		std::cout << "Client " << client.getFd()
               << " set USER to " << params[0] << "\n";
 	}
-  
+
+  void CommandHandler::handleJoin(Client& client, const std::vector<std::string>& params)
+  {
+	if (!client.isRegistered())
+	{
+		sendToClient(client, "451 :You have not registered");
+		return;
+	}
+  }
