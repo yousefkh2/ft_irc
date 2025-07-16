@@ -13,16 +13,16 @@ SRCS = src/main.cpp \
 OBJDIR = objs
 OBJS = $(SRCS:src/%.cpp=$(OBJDIR)/%.o)
 
-
-
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	@mkdir -p $(OBJDIR)
 	$(CXX) $(INC) $(OBJS) -o $(NAME)
 
-$(OBJDIR)/%.o: src/%.cpp
+$(OBJDIR)/%.o: src/%.cpp | $(OBJDIR)
 	$(CXX) $(INC) -c $< -o $@
+
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
 
 clean:
 	rm -f $(OBJS)
