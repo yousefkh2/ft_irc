@@ -4,6 +4,10 @@
 #include <vector>
 #include "Client.hpp"
 #include "Command.hpp"
+#include "Server.hpp"
+
+class Server;
+class Channel;
 
 using Params = std::vector<std::string>;
 

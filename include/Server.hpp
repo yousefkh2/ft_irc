@@ -5,8 +5,8 @@
 #include <vector>
 #include <poll.h>
 #include <unordered_map>
-#include "CommandHandler.hpp"
 
+class CommandHandler;
 
 class Server {
 public:
@@ -38,6 +38,6 @@ private:
 	std::vector<pollfd> _fds;
 	std::unordered_map<int, Client> _clients;
 	std::unordered_map<std::string, Channel> _channels;
-	CommandHandler		_handler;
+	CommandHandler*		_handler;
 };
 

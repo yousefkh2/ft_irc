@@ -1,5 +1,6 @@
 
 #include "../include/Server.hpp"
+#include "../include/CommandHandler.hpp"
 #include <arpa/inet.h>
 #include <cstddef>
 #include <iostream>
@@ -12,11 +13,12 @@
 #include "../include/Channel.hpp"
 
 Server::Server(int port, const std::string& password)
-    : _port(port), _password(password), _server_fd(-1), _handler(password, this)
+    : _port(port), _password(password), _server_fd(-1), _handler(new CommandHandler(password, this))
 	{
 		initSocket(); // later
 	}
 Server::~Server() {
+	delete _handler;
 	cleanup();
 }
 
@@ -129,7 +131,7 @@ void Server::handleClientData(size_t idx)
 	buf.erase(0, used); // erases from position 0 (beginning of string) up to position used (erases complete commands)
 	for (auto& cmd : cmds)
 	{
-		_handler.handle(client, cmd);
+		_handler->handle(client, cmd);
 		std::cout << "Parsed command: " << cmd.name;
 		if (!cmd.params.empty()) {
 			std::cout << " [";
