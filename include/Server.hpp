@@ -24,6 +24,7 @@ private:
 	void acceptNewClient();
 	void handleClientData(size_t idx);
 	void cleanup();
+	void setNonBlocking(int fd);
 
     int _port;
     std::string     _password;
