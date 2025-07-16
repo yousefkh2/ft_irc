@@ -113,4 +113,15 @@ CommandHandler::CommandHandler(const std::string& password, Server* server)
     	sendToChannel(channel, joinMsg);
 		if (!channel->getTopic().empty()) // Send topic if it exists
 			sendToClient(client, "332 " + client.nickname() + " " + channelName + " :" + channel->getTopic());
+		// Send names list (list of users in channel)
+		std::string namesList = "353 " + client.nickname() + " = " + channelName + " :";
+		for (Client* c : channel->getClients())
+		{
+			if (channel->isOperator(c))
+				namesList += "@"; // @ prefix for operators
+			namesList += c->nickname() + " ";
+		}
+		sendToClient(client, namesList);
+		sendToClient(client, "366 " + client.nickname() + " " + channelName + " :End of /NAMES list");
+		std::cout << "Client " << client.nickname() << " joined channel " << channelName << std::endl;
   	}
