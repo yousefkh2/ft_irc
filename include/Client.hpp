@@ -36,5 +36,4 @@ private:
 	bool _passed = false;
 	bool _nickSet = false;
 	bool _userSet = false;
-
 };

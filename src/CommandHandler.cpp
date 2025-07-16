@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <vector>
 #include <algorithm>
-
+#include <sys/socket.h>
 
 
 using Params = std::vector<std::string>;
@@ -32,19 +32,45 @@ const std::unordered_map<std::string, CmdFn> CommandHandler::_dispatch_table = {
 CommandHandler::CommandHandler(const std::string& password)
   : _password(password) {}
 
+  void CommandHandler::sendNumeric(Client& client, int code, const std::string& message) {
+	std::string response = ":ft_irc.server " + std::to_string(code) + " " + 
+	client.nickname() + " " + message + "\r\n";
+	send(client.getFd(), response.c_str(), response.length(), 0);
+}
+
+void CommandHandler::sendWelcomeSequence(Client& client) {
+	std::string nick = client.nickname();
+	std::string user = client.username();
+
+	// 001 RPL_WELCOME
+	sendNumeric(client, 1, ":Welcome to the IRC Network " + nick + "!" + user + "@localhost");
+	// 002 RPL_YOURHOST
+	sendNumeric(client, 2, ":Your host is ft_irc.server, running version 1.0");
+	// 003 RPL_CREATED
+	sendNumeric(client, 3, ":This server was created today");
+	// 004 RPL_MYINFO
+	sendNumeric(client, 4, "ft_irc.server 1.0 - -");
+}
+
   void CommandHandler::handle(Client& client, const Command& cmd) {
 	std::cout << "Handler processing: " << cmd.name << std::endl;
+
+		bool wasRegistered = client.isRegistered();
 
 		auto it = _dispatch_table.find(toUpperIrc(cmd.name));
 		if (it != _dispatch_table.end()) {
 			(this->*it->second)(client, cmd.params);
 		}
 
-	if (client.isRegistered()) {
+	if (!wasRegistered && client.isRegistered()) {
 		std::cout << "Client " << client.getFd()
 				<< " fully registered (PASS, NICK, USER done)\n";
-		// later: send welcome numerics 001, 002...
+		sendWelcomeSequence(client);
 	}}
+
+	
+
+
 
 	void CommandHandler::handlePass(Client& client, const std::vector<std::string>& params) {
 		if (params.size() < 1) {
