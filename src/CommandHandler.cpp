@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <vector>
 #include <algorithm>
+#include <Server.hpp>
 
 
 
@@ -83,11 +84,33 @@ CommandHandler::CommandHandler(const std::string& password, Server* server)
               << " set USER to " << params[0] << "\n";
 	}
 
-  void CommandHandler::handleJoin(Client& client, const std::vector<std::string>& params)
-  {
-	if (!client.isRegistered())
-	{
-		sendToClient(client, "451 :You have not registered");
-		return;
-	}
-  }
+  	void CommandHandler::handleJoin(Client& client, const std::vector<std::string>& params)
+  	{
+		if (!client.isRegistered()) // Check if client is registered
+		{
+			sendToClient(client, "451 :You have not registered");
+			return ;
+		}
+		if (params.empty()) // Check if channel name is provided
+		{
+        	sendToClient(client, "461 JOIN :Not enough parameters");
+        	return ;
+    	}
+		std::string channelName = params[0];
+		if (!isValidChannelName(channelName)) // Validate channel name (must start with # or &)
+		{
+			sendToClient(client, "403 " + channelName + " :No such channel");
+			return ;
+		}
+		Channel* channel = _server->getChannel(channelName); // Get or create channel
+		if (!channel)
+			channel = _server->createChannel(channelName);
+		if (channel->hasClient(&client)) // Check if client is already in channel
+			return ; // Silently ignore if already in channel
+		channel->addClient(&client); // Add client to channel
+		// Send JOIN message to all clients in channel (including the joiner)
+		std::string joinMsg = ":" + client.nickname() + "!" + client.username() + "@localhost JOIN " + channelName;
+    	sendToChannel(channel, joinMsg);
+		if (!channel->getTopic().empty()) // Send topic if it exists
+			sendToClient(client, "332 " + client.nickname() + " " + channelName + " :" + channel->getTopic());
+  	}

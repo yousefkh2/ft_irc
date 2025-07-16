@@ -9,6 +9,7 @@
 #include <netinet/in.h>
 #include <vector>
 #include "../include/Parser.hpp"
+#include "../include/Channel.hpp"
 
 Server::Server(int port, const std::string& password)
 	: _port(port), _password(password), _server_fd(-1), _handler(password)

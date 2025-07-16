@@ -8,7 +8,8 @@ SRCS = src/main.cpp \
 	src/Channel.cpp \
 	src/CommandHandler.cpp \
 	src/Parser.cpp \
-	src/Utils.cpp
+	src/Utils.cpp \
+	src/Helpers.cpp
 
 OBJDIR = objs
 OBJS = $(SRCS:src/%.cpp=$(OBJDIR)/%.o)
