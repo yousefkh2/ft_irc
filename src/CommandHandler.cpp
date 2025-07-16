@@ -60,6 +60,8 @@ void CommandHandler::sendWelcomeSequence(Client& client) {
 		auto it = _dispatch_table.find(toUpperIrc(cmd.name));
 		if (it != _dispatch_table.end()) {
 			(this->*it->second)(client, cmd.params);
+		} else {
+			sendNumeric(client, 421, cmd.name + " :Unknown command"); //ERR_UNKNOWNCOMMAND
 		}
 
 	if (!wasRegistered && client.isRegistered()) {
@@ -73,24 +75,29 @@ void CommandHandler::sendWelcomeSequence(Client& client) {
 
 
 	void CommandHandler::handlePass(Client& client, const std::vector<std::string>& params) {
-		if (params.size() < 1) {
-			std::cerr << "PASS: missing parameter\n";
+		if (client.isRegistered()) {
+			sendNumeric(client, 462, ":You may not reregister"); //ERR_ALREADYREGISTERED
 			return;
 		}
-		if (params[0] == _password) {
-			client.setPassed(true);
-			std::cout << "Client " << client.getFd() << " GOOD PASS\n";
-		} else {
-			std::cout << "Client " << client.getFd() << " BAD PASS\n";
-			// later: send ERR_PASSWDMISTMATCH and close
+		if (params.size() < 1) {
+			sendNumeric(client, 461, "PASS :Not enough parameters");  // ERR_NEEDMOREPARAMS
+			return;
 		}
+		if (params[0] != _password) {
+			sendNumeric(client, 464, ":Password incorrect");  // ERR_PASSWDMISMATCH
+			return;
+		}
+		client.setPassed(true);
 	}
 
 	void CommandHandler::handleNick(Client& client, const std::vector<std::string>& params) {
 		if (params.empty()) {
-			std::cerr << "NICK: missing parameter\n";
+			sendNumeric(client, 431, ":No nickname given"); //ERR_NONICKNAMEGIVEN
 			return;
 		}
+
+		// TODO: Check if nickname is already in use by another client
+    	// sendNumeric(client, 433, params[0] + " :Nickname is already in use");
 		client.setNickname(params[0]);
 		client.setNickSet(true);
 		std::cout << "Client " << client.getFd()
@@ -99,7 +106,7 @@ void CommandHandler::sendWelcomeSequence(Client& client) {
 
 	void CommandHandler::handleUser(Client& client,  const std::vector<std::string>& params) {
 		if (params.size() < 4) {
-			std::cerr << "USER: missing parameters\n";
+			sendNumeric(client, 461, "USER :Not enough parameters");
 			return;
 		}
 		client.setUsername(params[0]);
