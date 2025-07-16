@@ -31,3 +31,53 @@ void Channel::removeClient(Client* client)
     _operators.erase(client);
 }
 
+bool Channel::hasClient(Client *client) const
+{
+    return _clients.find(client) != _clients.end();
+}
+
+const std::set<Client*>& Channel::getClients() const
+{
+    return _clients;
+}
+
+size_t Channel::getClientCount() const
+{
+    return _clients.size();
+}
+
+bool Channel::isInviteOnly() const
+{
+    return _inviteOnly;
+}
+
+void Channel::setInviteOnly(bool inviteOnly)
+{
+    _inviteOnly = inviteOnly;
+}
+
+bool Channel::hasTopicRestriction() const
+{
+    return _topicRestriction;
+}
+
+void Channel::setTopicRestriction(bool restriction)
+{
+    _topicRestriction = restriction;
+}
+
+bool Channel::isOperator(Client* client) const
+{
+    return _operators.find(client) != _operators.end();
+}
+
+void Channel::addOperator(Client* client)
+{
+    if (hasClient(client))
+        _operators.insert(client);
+}
+
+void Channel::removeOperator(Client* client)
+{
+    _operators.erase(client);
+}
