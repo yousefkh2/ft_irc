@@ -8,10 +8,10 @@ public:
 	int getFd() const;
 	std::string& buffer();
 
-	const std::string& nickname();
+	const std::string& nickname() const;
 	void setNickname(const std::string& nick);
 
-	const std::string& username();
+	const std::string& username() const;
 	void setUsername(const std::string& user);
 
 	// registration flags
@@ -25,6 +25,10 @@ public:
 	void setUserSet(bool);
 
 	bool isRegistered() const;
+	
+	// Add method to check if welcome messages were sent
+	bool wasWelcomed() const;
+	void setWelcomed(bool welcomed);
 
 private:
 	int _fd;
@@ -36,5 +40,5 @@ private:
 	bool _passed = false;
 	bool _nickSet = false;
 	bool _userSet = false;
-
+	bool _welcomed = false;
 };

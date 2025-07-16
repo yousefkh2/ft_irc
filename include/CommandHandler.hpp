@@ -22,7 +22,13 @@ class CommandHandler {
 	void handlePass(Client& client, const std::vector<std::string>& params);
 	void handleNick(Client& client, const std::vector<std::string>& params);
 	void handleUser(Client& client, const std::vector<std::string>& params);
-
+	void handlePing(Client& client, const std::vector<std::string>& params);
+	void handlePong(Client& client, const std::vector<std::string>& params);
+	void handleQuit(Client& client, const std::vector<std::string>& params);
+	
+	// Helper function to send messages to client
+	void sendToClient(Client& client, const std::string& message);
+	void sendWelcomeMessages(Client& client);
 
 	std::string _password;
 	static const std::unordered_map<std::string, CmdFn> _dispatch_table;

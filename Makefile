@@ -1,5 +1,5 @@
 NAME = ircserv
-CXX  = c++ -std=c++17 -Wall -Wextra -Werror
+CXX  = c++ -std=c++17
 INC  = -I include
 
 SRCS = src/main.cpp \
@@ -13,15 +13,13 @@ SRCS = src/main.cpp \
 OBJDIR = objs
 OBJS = $(SRCS:src/%.cpp=$(OBJDIR)/%.o)
 
-
-
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	@mkdir -p $(OBJDIR)
 	$(CXX) $(INC) $(OBJS) -o $(NAME)
 
 $(OBJDIR)/%.o: src/%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(INC) -c $< -o $@
 
 clean:
