@@ -3,12 +3,13 @@ CXX  = c++ -std=c++17 -Wall -Wextra -Werror
 INC  = -I include
 
 SRCS = src/main.cpp \
-       src/Server.cpp \
-       src/Client.cpp \
-       src/Channel.cpp \
-       src/CommandHandler.cpp \
-       src/Parser.cpp \
-       src/Utils.cpp
+	src/Server.cpp \
+	src/Client.cpp \
+	src/Channel.cpp \
+	src/CommandHandler.cpp \
+	src/Parser.cpp \
+	src/Utils.cpp \
+	src/Helpers.cpp
 
 OBJDIR = objs
 OBJS = $(SRCS:src/%.cpp=$(OBJDIR)/%.o)
@@ -26,8 +27,9 @@ $(OBJDIR):
 
 clean:
 	rm -f $(OBJS)
-
+      
 fclean: clean
 	rm -f $(NAME)
+	rm -rf $(OBJDIR)
 
 re: fclean all
