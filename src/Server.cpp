@@ -139,6 +139,48 @@ void Server::handleClientData(size_t idx)
 	}
 }
 
+// Returns pointer to existing channel, or nullptr if not found
+Channel* Server::getChannel(const std::string& name)
+{
+	auto it = _channels.find(name);
+	if (it != _channels.end())
+		return &it->second;
+	return nullptr;
+}
+
+// Creates a new channel with given name and returns pointer to it
+Channel* Server::createChannel(const std::string& name)
+{
+	// Check if channel already exists
+	if (channelExists(name))
+		return getChannel(name);
+	// Create new channel using emplace (constructs in-place)
+	auto result = _channels.emplace(name, Channel(name));
+	std::cout << "Created new channel: " << name << std::endl;
+	return &result.first->second;
+}
+
+// Removes a channel if it exists and is empty
+void Server::removeChannel(const std::string& name)
+{
+	auto it = _channels.find(name);
+	if (it != _channels.end())
+	{
+		Channel& channel = it->second;
+		if (channel.getClientCount() == 0) // Only remove if channel is empty
+		{
+			std::cout << "Removing empty channel: " << name << std::endl;
+			_channels.erase(it);
+		}
+	}
+}
+
+// Checks if a channel exists
+bool Server::channelExists(const std::string& name) const
+{
+	return _channels.find(name) != _channels.end();
+}
+
 void Server::cleanup() {
 	for (auto& pfd : _fds) {
 		close(pfd.fd);
