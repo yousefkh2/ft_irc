@@ -4,7 +4,6 @@
 #include <vector>
 #include "Client.hpp"
 #include "Command.hpp"
-#include "Server.hpp"
 
 class Server;
 class Channel;
