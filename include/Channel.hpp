@@ -9,30 +9,36 @@ class Channel
     public:
         // Constructor: creates a new channel with given name
         Channel(const std::string& name);
+
         //basic channel infos
-        const std::string& getName() const;    // Returns channel name (e.g., "#general")
-        const std::string& getTopic() const;   // Returns current channel topic
-        void setTopic(const std::string& topic); // Sets new topic for the channel
+
+        const std::string& getName() const;
+        const std::string& getTopic() const;
+        void setTopic(const std::string& topic);
+
         //Managing members inside the channel
         void addClient(Client* client);        // Adds a client to the channel (first becomes operator)
-        void removeClient(Client* client);     // Removes client from channel and operator list
+        void removeClient(Client* client);
         bool hasClient(Client* client) const;  // Checks if client is in this channel
         const std::set<Client*>& getClients() const; // Returns all clients in channel
-        size_t getClientCount() const;         // Returns number of clients in channel
+        size_t getClientCount() const;
+
         // Channel modes (for future expansion)
-        bool isInviteOnly() const;             // Returns true if channel is invite-only (i)
+        bool isInviteOnly() const;
         void setInviteOnly(bool inviteOnly);   // Sets invite-only mode on/off
         bool hasTopicRestriction() const;      // Returns true if only ops can change topic
         void setTopicRestriction(bool restriction); // Sets topic restriction on/off
+
         // Operator management
         bool isOperator(Client* client) const; // Checks if client has operator privileges
         void addOperator(Client* client);      // Gives operator privileges to client
         void removeOperator(Client* client);   // Removes operator privileges from client
+
     private:
-        std::string _name;          // Channel name (e.g., "#general")
-        std::string _topic;         // Current channel topic
+        std::string _name;
+        std::string _topic;
         std::set<Client*> _clients; // All clients currently in the channel
-        std::set<Client*> _operators; // Clients with operator privileges
+        std::set<Client*> _operators;
         // Channel modes
         bool _inviteOnly = false;      // If true, only invited users can join
         bool _topicRestriction = true; // If true, only operators can change topic

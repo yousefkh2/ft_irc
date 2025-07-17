@@ -135,7 +135,7 @@ void Server::handleClientData(size_t idx) {
     _clients.erase(fd);
     return;
   }
-
+    
   Client &client = _clients[fd];
   std::string &buf = client.buffer();
   buf.append(buffer, n); // now it's filled!

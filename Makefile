@@ -7,6 +7,8 @@ SRCS = src/main.cpp \
 	src/Client.cpp \
 	src/Channel.cpp \
 	src/CommandHandler.cpp \
+	src/AuthHandlers.cpp \
+	src/ChannelHandlers.cpp \
 	src/Parser.cpp \
 	src/Utils.cpp \
 	src/Helpers.cpp
