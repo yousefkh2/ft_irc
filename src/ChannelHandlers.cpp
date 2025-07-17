@@ -108,10 +108,35 @@ void CommandHandler::handlePart(Client& client, const std::vector<std::string>& 
     if (!partMessage.empty())
       partMsg += " :" + partMessage;
     sendToChannel(channel, partMsg);
+    bool wasOperator = channel->isOperator(&client);
     channel->removeClient(&client);
+    if (wasOperator && channel->getClientCount() > 0){
+      std::set<Client*> clients = channel->getClients();
+      if (!clients.empty()) {
+        Client* newOp = *clients.begin();
+        channel->addOperator(newOp);
+        std::string modeMsg = ":server MODE " + channelName + " +o " + newOp->nickname();
+        sendToChannel(channel, modeMsg);
+        std::string noticeMsg = ":server NOTICE " + channelName + " :" + newOp->nickname() + " has been promoted to operator";
+        sendToChannel(channel, noticeMsg);
+        std::cout << "Client " << newOp->nickname() << " promoted to operator in " << channelName << std::endl;
+      }
+    }
     if (channel->getClientCount() == 0){
       _server->removeChannel(channelName);
     } else {
+      if (wasOperator){
+        const std::set<Client*>& remainingClients = channel->getClients();
+        for (Client* c : remainingClients)
+        {
+          if (c && c != &client)
+          {
+            channel->addOperator(c);
+            std::string newOpMsg = ":" + c->nickname() + " has been promoted to operator on channel " + channelName;
+            break ;
+          }
+        }
+      }
       std::string namesList = "353 * = " + channelName + " :";
       bool first = true;
       for (Client* c : channel->getClients()){
