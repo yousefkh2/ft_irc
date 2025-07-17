@@ -72,7 +72,23 @@ sendToClient(client, "366 " + nick + " " + channelName + " :End of /NAMES list")
 std::cout << "Client " << nick << " joined channel " << channelName << std::endl;
 }
 
-void handlePart(Client& client, const std::vector<std::string>& params)
+void CommandHandler::handlePart(Client& client, const std::vector<std::string>& params)
 {
-  
+    if (!client.isRegistered()) // Check if the client is registred
+    {
+      sendNumeric(client, 451, ":You have not registered");
+      return ;
+    }
+    if (params.empty()) // Check for parameters for the PART command
+    {
+      sendNumeric(client, 461, "PART :Not enough parameters");
+      return ;
+    }
+    std::string channelName = params[0];
+    std::string partMessage = params.size() > 1 ? params[1] : "";
+    if (!isValidChannelName(channelName)) // Validate channel name
+    {
+      sendNumeric(client, 403, channelName + " :No such channel");
+      return ;
+    }
 }
