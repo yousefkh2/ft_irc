@@ -131,7 +131,7 @@ void CommandHandler::handlePart(Client& client, const std::vector<std::string>& 
     }   
     std::cout << "Client " << nick << " left channel " << channelName << std::endl;
 }
-
+// To fix : params
 void CommandHandler::handleTopic(Client& client, const std::vector<std::string>& params)
 {
   if (!client.isRegistered())
@@ -167,7 +167,12 @@ void CommandHandler::handleTopic(Client& client, const std::vector<std::string>&
     }
     return ;
   }
-  std::string newTopic = params[1];
+  std::string newTopic;
+  for (size_t i = 1; i < params.size(); ++i) {
+    if (i > 1)
+      newTopic += " ";
+    newTopic += params[i];
+  }
   if (channel->hasTopicRestriction() && !channel->isOperator(&client)) {
     sendNumeric(client, 482, channelName + " :You're not channel operator");
     return ;
