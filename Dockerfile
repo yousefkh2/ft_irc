@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
 	irssi \
 	net-tools \
 	netcat-openbsd \
+    telnet \
     && apt-get clean
 
 WORKDIR /app

@@ -12,15 +12,23 @@ void CommandHandler::handleJoin(Client &client,
     return;
   }
   std::string channelName = params[0];
-  if (!isValidChannelName(
-          channelName)) // Validate channel name (must start with # or &)
-  {
+  if (!isValidChannelName(channelName)) {
     sendNumeric(client, 403, channelName + " :No such channel");
+    return;
+  }
+  // FIX 1: Validate client state more thoroughly
+  if (client.nickname().empty() || client.username().empty()) {
+    sendNumeric(client, 451, ":Registration incomplete");
     return;
   }
   Channel *channel = _server->getChannel(channelName);
   if (!channel)
     channel = _server->createChannel(channelName);
+  // FIX 2: Add null pointer check after channel creation
+  if (!channel) {
+    sendNumeric(client, 403, channelName + " :Channel creation failed");
+    return;
+  }
   if (channel->hasClient(&client))
     return;
   channel->addClient(&client);
