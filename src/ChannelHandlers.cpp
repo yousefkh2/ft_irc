@@ -145,5 +145,36 @@ void CommandHandler::handleTopic(Client& client, const std::vector<std::string>&
     return ;
   }
   std::string channelName = params[0];
-  
+  if (!isValidChannelName(channelName)) {
+    sendNumeric(client, 403, channelName + " :No such channel");
+    return ;
+  }
+  Channel* channel = _server->getChannel(channelName);
+  if (!channel) {
+    sendNumeric(client, 403, channelName + " :Channel does not exist");
+    return ;
+  }
+  if (!channel->hasClient(&client)) {
+    sendNumeric(client, 442, channelName + " :You're not on that channel");
+    return ;
+  }
+  std::string nick = client.nickname();
+  if (params.size() == 1) {
+    if (channel->getTopic().empty()) {
+      sendNumeric(client, 331, channelName + " :No topic is set");
+    } else {
+      sendNumeric(client, 332, channelName + " :" + channel->getTopic());
+    }
+    return ;
+  }
+  std::string newTopic = params[1];
+  if (channel->hasTopicRestriction() && !channel->isOperator(&client)) {
+    sendNumeric(client, 482, channelName + " :You're not channel operator");
+    return ;
+  }
+  channel->setTopic(newTopic);
+  std::string user = client.username();
+  std::string topicMsg = ":" + nick + "!" + user + "@localhost TOPIC " + channelName + " :" + newTopic;
+  sendToChannel(channel, topicMsg);
+  std::cout << "Topic for " << channelName << " changed by " << nick << " to: " << newTopic << std::endl;
 }
