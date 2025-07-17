@@ -161,7 +161,7 @@ void CommandHandler::handleTopic(Client& client, const std::vector<std::string>&
   std::string nick = client.nickname();
   if (params.size() == 1) {
     if (channel->getTopic().empty()) {
-      sendNumeric(client, 331, channelName + " :No topic is set");
+      sendNumeric(client, 331, channelName + " :No topic is set on this channel");
     } else {
       sendNumeric(client, 332, channelName + " :" + channel->getTopic());
     }
