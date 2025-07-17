@@ -88,7 +88,29 @@ void CommandHandler::handlePart(Client& client, const std::vector<std::string>& 
     std::string partMessage = params.size() > 1 ? params[1] : "";
     if (!isValidChannelName(channelName)) // Validate channel name
     {
-      sendNumeric(client, 403, channelName + " :No such channel");
+      sendNumeric(client, 403, channelName + " :Channel does not exist");
       return ;
     }
+    Channel* channel = _server->getChannel(channelName); // Get channel name
+    if (!channel)
+    {
+      sendNumeric(client, 403, channelName + " :Channel does not exist");
+      return ;
+    }
+    if (!channel->hasClient(&client)) // Check if the user is inside the channel
+    {
+      sendNumeric(client, 442, channelName + " :You're not on that channel");
+      return ;
+    }
+    // Personalizing the PART message
+    std::string nick = client.nickname();
+    std::string user = client.username();
+    std::string partMsg = ":" + nick + "!" + user + "@localhost PART " + channelName;
+    if (!partMessage.empty())
+      partMsg += " :" + partMessage;
+    sendToChannel(channel, partMsg); // Send message to channel
+    channel->removeClient(&client); //remove user form channel
+    if (channel->getClientCount() == 0) // remove channel if there is 0 user
+      _server->removeChannel(channelName);
+    std::cout << "Client " << nick << " left channel " << channelName << std::endl;
 }
