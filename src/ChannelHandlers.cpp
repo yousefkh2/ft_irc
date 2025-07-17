@@ -97,12 +97,11 @@ void CommandHandler::handlePart(Client& client, const std::vector<std::string>& 
       sendNumeric(client, 403, channelName + " :Channel does not exist");
       return ;
     }
-    if (!channel->hasClient(&client)) // Check if the user is inside the channel
+    if (!channel->hasClient(&client))
     {
       sendNumeric(client, 442, channelName + " :You're not on that channel");
       return ;
     }
-    // Personalizing the PART message
     std::string nick = client.nickname();
     std::string user = client.username();
     std::string partMsg = ":" + nick + "!" + user + "@localhost PART " + channelName;
@@ -110,7 +109,25 @@ void CommandHandler::handlePart(Client& client, const std::vector<std::string>& 
       partMsg += " :" + partMessage;
     sendToChannel(channel, partMsg);
     channel->removeClient(&client);
-    if (channel->getClientCount() == 0) // remove channel if there is 0 user
+    if (channel->getClientCount() == 0){
       _server->removeChannel(channelName);
+    } else {
+      std::string namesList = "353 * = " + channelName + " :";
+      bool first = true;
+      for (Client* c : channel->getClients()){
+        if (c && !c->nickname().empty()) {
+          if (!first)
+            namesList += " ";
+          first = false;
+          if (channel->isOperator(c)) {
+            namesList += "@";
+          }
+          namesList += c->nickname();
+        }
+      }
+      std::string endOfNames = "366 * " + channelName + " :End of /NAMES list";
+      sendToChannel(channel, namesList);
+      sendToChannel(channel, endOfNames);
+    }   
     std::cout << "Client " << nick << " left channel " << channelName << std::endl;
 }
