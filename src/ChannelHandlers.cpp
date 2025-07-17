@@ -131,3 +131,19 @@ void CommandHandler::handlePart(Client& client, const std::vector<std::string>& 
     }   
     std::cout << "Client " << nick << " left channel " << channelName << std::endl;
 }
+
+void CommandHandler::handleTopic(Client& client, const std::vector<std::string>& params)
+{
+  if (!client.isRegistered())
+  {
+    sendNumeric(client, 451, ":You have not registered");
+    return ;
+  }
+  if (params.empty())
+  {
+    sendNumeric(client, 461, "PART :Not enough parameters");
+    return ;
+  }
+  std::string channelName = params[0];
+  
+}
