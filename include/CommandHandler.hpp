@@ -32,6 +32,7 @@ class CommandHandler {
 	void handleJoin(Client& client, const std::vector<std::string>& params);
 	void handlePart(Client& client, const std::vector<std::string>& params);
 	void handleTopic(Client& client, const std::vector<std::string>& params);
+	void handleKick(Client& client, const std::vector<std::string>& params);
 
 
 	// Utility functions

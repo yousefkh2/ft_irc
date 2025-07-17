@@ -208,4 +208,4 @@ void CommandHandler::handleTopic(Client& client, const std::vector<std::string>&
   sendToChannel(channel, topicMsg);
   std::cout << "Topic for " << channelName << " changed by " << nick << " to: " << newTopic << std::endl;
 }
-// To fix modo part after the moderator leaves
+
