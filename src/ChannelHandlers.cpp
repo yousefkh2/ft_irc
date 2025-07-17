@@ -209,3 +209,73 @@ void CommandHandler::handleTopic(Client& client, const std::vector<std::string>&
   std::cout << "Topic for " << channelName << " changed by " << nick << " to: " << newTopic << std::endl;
 }
 
+void CommandHandler::handleKick(Client& client, const std::vector<std::string>& params) {
+  if (!client.isRegistered()){
+    sendNumeric(client, 451, ":You have not registered");
+    return ;
+  }
+  if (params.size() < 2) { // Usage: KICK #channel nickname :reason
+    sendNumeric(client, 461, "KICK :Not enough parameters");
+    return ;
+  }
+  std::string channelName = params[0];
+  std::string targetNick = params[1];
+  std::string kickMessage = params.size() > 2 ? params[2] : client.nickname();
+  if (!isValidChannelName(channelName)) {
+    sendNumeric(client, 403, channelName + " :No such channel");
+    return ;
+  }
+  Channel* channel = _server->getChannel(channelName);
+  if (!channel) {
+    sendNumeric(client, 403, channelName + " :No such channel");
+    return ;
+  }
+  if (!channel->hasClient(&client)) {
+    sendNumeric(client, 442, channelName + " :You're not on that channel");
+    return ;
+  }
+  if (!channel->isOperator(&client)) { // the moderator is the only one allowed to kick someone
+    sendNumeric(client, 482, channelName + " :You're not channel operator");
+    return ;
+  }
+  Client* targetClient = nullptr; // target user to kick
+  for (Client* c : channel->getClients()) {
+    if (c && c->nickname() == targetNick) {
+      targetClient = c;
+      break ;
+    }
+  }
+  if (!targetClient) { // target must be present in the channel
+    sendNumeric(client, 401, targetNick + " :No such nick/channel");
+    return ;
+  }
+  if (targetClient == &client) { // moderator cannot kick himself
+    sendNumeric(client, 484, channelName + " :Cannot kick yourself");
+    return ;
+  }
+  std::string kickMsg = ":" + client.nickname() + "!" + client.username() + "@localhost KICK " + channelName + " " + targetNick;
+  if (!kickMessage.empty())
+    kickMsg += " :" + kickMessage;
+  sendToChannel(channel, kickMsg);
+  channel->removeClient(targetClient);
+  if (channel->getClientCount() == 0)
+    _server->removeChannel(channelName);
+  else {
+    std::string namesList = "353 * = " + channelName + " :";
+    bool first = true;
+    for (Client* c : channel->getClients()) {
+      if (c && !c->nickname().empty()) {
+        if (!first)
+          namesList += " ";
+        first = false;
+        if (channel->isOperator(c))
+          namesList += "@";
+        namesList += c->nickname();
+      }
+    }
+    std::string endOfNames = "366 * " + channelName + " :End of /NAMES list";
+    sendToChannel(channel, namesList);
+    sendToChannel(channel, endOfNames);
+    }
+    std::cout << "Client " << client.nickname() << " kicked " << targetNick << " from " << channelName << std::endl;
+}
