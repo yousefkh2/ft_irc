@@ -74,24 +74,24 @@ std::cout << "Client " << nick << " joined channel " << channelName << std::endl
 
 void CommandHandler::handlePart(Client& client, const std::vector<std::string>& params)
 {
-    if (!client.isRegistered()) // Check if the client is registred
+    if (!client.isRegistered())
     {
       sendNumeric(client, 451, ":You have not registered");
       return ;
     }
-    if (params.empty()) // Check for parameters for the PART command
+    if (params.empty())
     {
       sendNumeric(client, 461, "PART :Not enough parameters");
       return ;
     }
     std::string channelName = params[0];
     std::string partMessage = params.size() > 1 ? params[1] : "";
-    if (!isValidChannelName(channelName)) // Validate channel name
+    if (!isValidChannelName(channelName))
     {
       sendNumeric(client, 403, channelName + " :Channel does not exist");
       return ;
     }
-    Channel* channel = _server->getChannel(channelName); // Get channel name
+    Channel* channel = _server->getChannel(channelName);
     if (!channel)
     {
       sendNumeric(client, 403, channelName + " :Channel does not exist");
@@ -108,8 +108,8 @@ void CommandHandler::handlePart(Client& client, const std::vector<std::string>& 
     std::string partMsg = ":" + nick + "!" + user + "@localhost PART " + channelName;
     if (!partMessage.empty())
       partMsg += " :" + partMessage;
-    sendToChannel(channel, partMsg); // Send message to channel
-    channel->removeClient(&client); //remove user form channel
+    sendToChannel(channel, partMsg);
+    channel->removeClient(&client);
     if (channel->getClientCount() == 0) // remove channel if there is 0 user
       _server->removeChannel(channelName);
     std::cout << "Client " << nick << " left channel " << channelName << std::endl;

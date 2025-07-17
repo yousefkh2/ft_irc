@@ -9,7 +9,7 @@ class Channel
     public:
         // Constructor: creates a new channel with given name
         Channel(const std::string& name);
-
+    
         //basic channel infos
 
         const std::string& getName() const;
