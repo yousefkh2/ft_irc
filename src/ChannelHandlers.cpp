@@ -71,3 +71,8 @@ sendToClient(client, "366 " + nick + " " + channelName + " :End of /NAMES list")
 
 std::cout << "Client " << nick << " joined channel " << channelName << std::endl;
 }
+
+void handlePart(Client& client, const std::vector<std::string>& params)
+{
+  
+}

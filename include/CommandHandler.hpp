@@ -30,6 +30,7 @@ class CommandHandler {
 	void sendWelcomeSequence(Client& client);
 	void sendNumeric(Client& client, int code, const std::string& message);
 	void handleJoin(Client& client, const std::vector<std::string>& params);
+	void handlePart(Client& client, const std::vector<std::string>& params);
 
 
 	// Utility functions
