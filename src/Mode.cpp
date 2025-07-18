@@ -1,3 +1,4 @@
+#include "../include/Channel.hpp"
 #include "../include/CommandHandler.hpp"
 #include "../include/Server.hpp"
 
@@ -127,6 +128,7 @@ void CommandHandler::handleTopicRestrictionMode(Client& client, Channel* channel
         std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@localhost MODE " + channel->getName() + " " + (adding ? "+t" : "-t");
         sendToChannel(channel, modeMsg);
         std::cout << "Channel " << channel->getName() << " topic restriction " << (adding ? "enabled" : "disabled") << " by " << client.nickname() << std::endl;
+    }
 }
 
 void CommandHandler::handleOperatorMode(Client& client, Channel* channel, bool adding, const std::string& targetNick) {
@@ -137,7 +139,7 @@ void CommandHandler::handleOperatorMode(Client& client, Channel* channel, bool a
             break ;
         }
     }
-    if (!targerClient) {
+    if (!targetClient) {
         sendNumeric(client, 401, targetNick + " :No such cik/channel");
         return ;
     }
@@ -204,7 +206,7 @@ void CommandHandler::handleUserLimitMode(Client& client, Channel* channel, bool 
         try {
             limit = std::stoul(limitStr);
         } catch (const std::exception&) {
-            sendNumeric(client, 525, channel-getName() + " :Invalid user limit");
+            sendNumeric(client, 525, channel->getName() + " :Invalid user limit");
             return ;
         }
         if (limit == 0 || limit > 1000) {

@@ -123,6 +123,7 @@ size_t Channel::getUserLimit() const {
 size_t Channel::setUserLimit(size_t limit) {
     _userLimit = limit;
     _hasUserLimit = true;
+    return _userLimit;
 }
 
 void Channel::removeUserLimit() {

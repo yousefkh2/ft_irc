@@ -14,6 +14,7 @@ return;
 }
 
 std::string channelName = params[0];
+std::string channelKey = params.size() > 1 ? params[1] : "";
 if (!isValidChannelName(channelName)) {
 sendNumeric(client, 403, channelName + " :No such channel");
 return;
@@ -38,6 +39,22 @@ return;
 
 if (channel->hasClient(&client)) {
 return;
+}
+
+// Check for key
+if (channel->hasKey()) {
+  if (channelKey.empty() || channelKey != channel->getKey()) {
+    sendNumeric(client, 475, channelName + " :Cannot join channel (+k)");
+    return ;
+  }
+}
+
+// Chek for user limit
+if (channel->hasUserLimit()) {
+  if (channel->getClientCount() >= channel->getUserLimit()) {
+    sendNumeric(client, 471, channelName + " :Cannot join channel (+l)");
+    return ;
+  }
 }
 
 // Check if channel is invite-only and user is not invited
