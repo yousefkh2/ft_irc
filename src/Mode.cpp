@@ -121,3 +121,11 @@ void CommandHandler::handleInviteOnlyMode(Client& client, Channel* channel, bool
     }
 }
 
+void CommandHandler::handleTopicRestrictionMode(Client& client, Channel* channel, bool adding) {
+    if (adding != channel->hasTopicRestriction()) {
+        channel->setTopicRestriction(adding);
+        std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@localhost MODE " + channel->getName() + " " + (adding ? "+t" : "-t");
+        sendToChannel(channel, modeMsg);
+        std::cout << "Channel " << channel->getName() << " topic restriction " << (adding ? "enabled" : "disabled") << " by " << client.nickname() << std::endl;
+}
+
