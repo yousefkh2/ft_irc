@@ -81,3 +81,52 @@ void Channel::removeOperator(Client* client)
 {
     _operators.erase(client);
 }
+
+void Channel::addInvitedClient(Client* client) {
+    _invitedClients.insert(client);
+}
+
+bool Channel::isInvited(Client* client) const {
+    return _invitedClients.find(client) != _invitedClients.end();
+}
+
+void Channel::removeInvitedClient(Client* client) {
+    _invitedClients.erase(client);
+}
+
+bool Channel::hasKey() const {
+    return _hasKey;
+}
+
+const std::string& Channel::getKey() const {
+    return _key;
+}
+
+void Channel::setKey(const std::string&key) {
+    _key = key;
+    _hasKey = true;
+}
+
+void Channel::removeKey() {
+    _key.clear();
+    _hasKey = false;
+}
+
+bool Channel::hasUserLimit() const {
+    return _hasUserLimit;
+}
+
+size_t Channel::getUserLimit() const {
+    return _hasUserLimit;
+}
+
+size_t Channel::setUserLimit(size_t limit) {
+    _userLimit = limit;
+    _hasUserLimit = true;
+    return _userLimit;
+}
+
+void Channel::removeUserLimit() {
+    _userLimit = 0;
+    _hasUserLimit = false;
+}

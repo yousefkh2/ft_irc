@@ -7,11 +7,11 @@ int Client::getFd() const { return _fd; }
 
 std::string &Client::buffer() { return _buffer; }
 
-const std::string& Client::nickname() {return _nickname;}
+const std::string& Client::nickname() const {return _nickname;}
 
 void Client::setNickname(const std::string& nick) { _nickname = nick;}
 
-const std::string& Client::username() {return _username;}
+const std::string& Client::username() const {return _username;}
 void Client::setUsername(const std::string& user) {_username = user;}
 
 bool Client::hasPassed() const {return _passed; }

@@ -30,12 +30,25 @@ class CommandHandler {
 	void sendWelcomeSequence(Client& client);
 	void sendNumeric(Client& client, int code, const std::string& message);
 	void handleJoin(Client& client, const std::vector<std::string>& params);
-
+	void handlePart(Client& client, const std::vector<std::string>& params);
+	void handleTopic(Client& client, const std::vector<std::string>& params);
+	void handleKick(Client& client, const std::vector<std::string>& params);
+	void handleInvite(Client& client, const std::vector<std::string>& params);
+	void handleMode(Client& client, const std::vector<std::string>& params);
 
 	// Utility functions
     void sendToClient(Client& client, const std::string& message);
     void sendToChannel(Channel* channel, const std::string& message, Client* exclude = nullptr);
     bool isValidChannelName(const std::string& name);
+
+	// Mode utilities
+	void handleChannelMode(Client& client, const std::vector<std::string>& params);
+	void handleInviteOnlyMode(Client& client, Channel* channel, bool adding);
+	void handleTopicRestrictionMode(Client& client, Channel* channel, bool adding);
+	void handleOperatorMode(Client& client, Channel* channel, bool adding, const std::string& targetNick);
+    void handleChannelKeyMode(Client& client, Channel* channel, bool adding, const std::string& key);
+    void handleUserLimitMode(Client& client, Channel* channel, bool adding, const std::string& limitStr);
+
 	std::string _password;
 	Server* _server;
 	static const std::unordered_map<std::string, CmdFn> _dispatch_table;
