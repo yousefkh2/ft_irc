@@ -129,3 +129,43 @@ void CommandHandler::handleTopicRestrictionMode(Client& client, Channel* channel
         std::cout << "Channel " << channel->getName() << " topic restriction " << (adding ? "enabled" : "disabled") << " by " << client.nickname() << std::endl;
 }
 
+void CommandHandler::handleOperatorMode(Client& client, Channel* channel, bool adding, const std::string& targetNick) {
+    Client* targetClient = nullptr;
+    for (Client* c : channel->getClients()) {
+        if (c && c->nickname() == targetNick) {
+            targetClient = c;
+            break ;
+        }
+    }
+    if (!targerClient) {
+        sendNumeric(client, 401, targetNick + " :No such cik/channel");
+        return ;
+    }
+    if (adding) {
+        if (!channel->isOperator(targetClient)) {
+            channel->addOperator(targetClient);
+            std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@localhost MODE " + channel->getName() + " +o " + targetNick;
+            sendToChannel(channel, modeMsg);
+            std::cout << "Client " << targetNick << " given operator privileges in " << channel->getName() << " by " << client.nickname() << std::endl;
+        }
+    } else {
+        if (channel->isOperator(targetClient)) { //Canot remove yourself from OP
+            if (targetClient == &client) {
+                size_t opCount = 0;
+                for (Client* c : channel->getClients()) {
+                    if (channel->isOperator(c)) {
+                        opCount++;
+                    }
+                }
+                if (opCount == 1) {
+                    sendNumeric(client, 482, channel->getName() + " :Cannot remove yourself as the only operator");
+                    return ;
+                }
+            }
+            channel->removeOperator(targetClient);
+            std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@localhost MODE " +  channel->getName() + " -o " + targetNick;
+            sendToChannel(channel, modeMsg);
+            std::cout << "Client " << targetNick << " removed operator privileges in " << channel->getName() << " by " << client.nickname() << std::endl;
+        }
+    }
+}
