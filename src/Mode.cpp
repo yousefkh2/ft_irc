@@ -193,3 +193,34 @@ void CommandHandler::handleChannelKeyMode(Client& client, Channel* channel, bool
         }
     }
 }
+
+void CommandHandler::handleUserLimitMode(Client& client, Channel* channel, bool adding, const std::string& limitStr) {
+    if (adding) {
+        if (limitStr.empty()) {
+            sendNumeric(client, 461, "MODE :Not enough parameters");
+            return ;
+        }
+        size_t limit;
+        try {
+            limit = std::stoul(limitStr);
+        } catch (const std::exception&) {
+            sendNumeric(client, 525, channel-getName() + " :Invalid user limit");
+            return ;
+        }
+        if (limit == 0 || limit > 1000) {
+            sendNumeric(client, 525, channel->getName() + " :Invalid user limit");
+            return ;
+        }
+        channel->setUserLimit(limit);
+        std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@localhost MODE " + channel->getName() + " +l " + std::to_string(limit);
+        sendToChannel(channel, modeMsg);
+        std::cout << "Channel " << channel->getName() << " user limit set to " << limit << " by " << client.nickname() << std::endl;
+    } else {
+        if (channel->hasUserLimit()) {
+            channel->removeUserLimit();
+            std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@localhost MODE " + channel->getName() + " -l";
+            sendToChannel(channel, modeMsg);
+            std::cout << "Channel " << channel->getName() << " user limit removed by " << client.nickname() << std::endl;
+        }
+    } 
+}
