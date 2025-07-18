@@ -46,5 +46,26 @@ void CommandHandler::handleChannelMode(Client& client, const std::vector<std::st
             modeString = "+"; // Nothing set
         sendNumeric(client, 324, channelName + " " + modeString + modeParams);
         return ;
-    }   
+    }
+    std::string modeString = params[1];
+    size_t paramIndex = 2;
+    bool adding = true;
+    for (size_t i = 0; i < modeString.length(); ++i) {
+        char mode = modeString[i];
+        if (mode == '+') {
+            adding = true;
+            continue ;
+        } else if (mode == '-') {
+            adding = false;
+            continue ;
+        }
+        if (!channel->isOperator(&client)) {
+            sendNumeric(client, 482, channelName + " :You're not channel operator");
+            return ;
+        }
+        switch (mode) {
+            case 'i':
+                handleInviteOnlyMode(client, channel, adding);
+        }
+    }
 }
