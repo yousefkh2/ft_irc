@@ -169,3 +169,27 @@ void CommandHandler::handleOperatorMode(Client& client, Channel* channel, bool a
         }
     }
 }
+
+void CommandHandler::handleChannelKeyMode(Client& client, Channel* channel, bool adding, const std::string& key) {
+    if (adding) {
+        if (key.empty()) {
+            sendNumeric(client, 461, "MODE :Not enough parameters");
+            return ;
+        }
+        if (key.find(' ') != std::string::npos || key.length() > 50) { //Validate Key
+            sendNumeric(client, 525, channel->getName() + " :Invalid channel key");
+            return;
+        }
+        channel->setKey(key);
+        std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@localhost MODE " + channel->getName() + " +k " + key;
+        sendToChannel(channel, modeMsg);
+        std::cout << "Channel " << channel->getName() << " key set by " << client.nickname() << std::endl;
+    } else {
+        if (channel->hasKey()) {
+            channel->removeKey();
+            std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@localhost MODE " + channel->getName() + " -k";
+            sendToChannel(channel, modeMsg);
+            std::cout << "Channel " << channel->getName() << " key removed by " << client.nickname() << std::endl;
+        }
+    }
+}
