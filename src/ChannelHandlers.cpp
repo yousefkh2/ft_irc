@@ -45,7 +45,7 @@ if (channel->hasKey()) {
 // Chek for user limit
 if (channel->hasUserLimit()) {
   if (channel->getClientCount() >= channel->getUserLimit()) {
-    sendNumeric(client, 471, channelName + " :Cannot join channel due to limit restriction)");
+    sendNumeric(client, 471, channelName + " :Cannot join channel due to limit restriction");
     return ;
   }
 }
@@ -93,6 +93,7 @@ std::cout << "Client " << nick << " joined channel " << channelName << std::endl
 
 void CommandHandler::handlePart(Client& client, const std::vector<std::string>& params)
 {
+	
     if (!client.isRegistered())
     {
       sendNumeric(client, 451, ":You have not registered");
@@ -121,60 +122,32 @@ void CommandHandler::handlePart(Client& client, const std::vector<std::string>& 
       sendNumeric(client, 442, channelName + " :You're not on that channel");
       return ;
     }
+
     std::string nick = client.nickname();
     std::string user = client.username();
     std::string partMsg = ":" + nick + "!" + user + "@localhost PART " + channelName;
     if (!partMessage.empty())
       partMsg += " :" + partMessage;
     sendToChannel(channel, partMsg);
+
     bool wasOperator = channel->isOperator(&client);
     channel->removeClient(&client);
 
 	
-    if (wasOperator && channel->getClientCount() > 0){
-      std::set<Client*> clients = channel->getClients();
-      if (!clients.empty()) {
-        Client* newOp = *clients.begin();
+    if (wasOperator && channel->getClientCount() > 0) {
+        Client* newOp = *channel->getClients().begin();
         channel->addOperator(newOp);
         std::string modeMsg = ":server MODE " + channelName + " +o " + newOp->nickname();
         sendToChannel(channel, modeMsg);
         std::string noticeMsg = ":server NOTICE " + channelName + " :" + newOp->nickname() + " has been promoted to operator";
         sendToChannel(channel, noticeMsg);
         std::cout << "Client " << newOp->nickname() << " promoted to operator in " << channelName << std::endl;
-      }
     }
+
     if (channel->getClientCount() == 0){
       _server->removeChannel(channelName);
-    } else {
-      if (wasOperator){
-        const std::set<Client*>& remainingClients = channel->getClients();
-        for (Client* c : remainingClients)
-        {
-          if (c && c != &client)
-          {
-            channel->addOperator(c);
-            std::string newOpMsg = ":" + c->nickname() + " has been promoted to operator on channel " + channelName;
-            break ;
-          }
-        }
-      }
-      std::string namesList = "353 * = " + channelName + " :";
-      bool first = true;
-      for (Client* c : channel->getClients()){
-        if (c && !c->nickname().empty()) {
-          if (!first)
-            namesList += " ";
-          first = false;
-          if (channel->isOperator(c)) {
-            namesList += "@";
-          }
-          namesList += c->nickname();
-        }
-      }
-      std::string endOfNames = "366 * " + channelName + " :End of /NAMES list";
-      sendToChannel(channel, namesList);
-      sendToChannel(channel, endOfNames);
-    }   
+    } 
+
     std::cout << "Client " << nick << " left channel " << channelName << std::endl;
 }
 
@@ -187,7 +160,7 @@ void CommandHandler::handleTopic(Client& client, const std::vector<std::string>&
   }
   if (params.empty())
   {
-    sendNumeric(client, 461, "PART :Not enough parameters");
+    sendNumeric(client, 461, "TOPIC :Not enough parameters");
     return ;
   }
   std::string channelName = params[0];
@@ -279,25 +252,10 @@ void CommandHandler::handleKick(Client& client, const std::vector<std::string>& 
     kickMsg += " :" + kickMessage;
   sendToChannel(channel, kickMsg);
   channel->removeClient(targetClient);
-  if (channel->getClientCount() == 0)
+  if (channel->getClientCount() == 0) {
     _server->removeChannel(channelName);
-  else {
-    std::string namesList = "353 * = " + channelName + " :";
-    bool first = true;
-    for (Client* c : channel->getClients()) {
-      if (c && !c->nickname().empty()) {
-        if (!first)
-          namesList += " ";
-        first = false;
-        if (channel->isOperator(c))
-          namesList += "@";
-        namesList += c->nickname();
-      }
-    }
-    std::string endOfNames = "366 * " + channelName + " :End of /NAMES list";
-    sendToChannel(channel, namesList);
-    sendToChannel(channel, endOfNames);
-    }
+  }
+
     std::cout << "Client " << client.nickname() << " kicked " << targetNick << " from " << channelName << std::endl;
 }
 
