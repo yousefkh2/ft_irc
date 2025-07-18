@@ -28,6 +28,9 @@ class Channel
         void setInviteOnly(bool inviteOnly);   // Sets invite-only mode on/off
         bool hasTopicRestriction() const;      // Returns true if only ops can change topic
         void setTopicRestriction(bool restriction); // Sets topic restriction on/off
+        void addInvitedClient(Client* client);
+        bool isInvited(Client* client) const;
+        void removeInvitedClient(Client* client);
 
         // Operator management
         bool isOperator(Client* client) const; // Checks if client has operator privileges

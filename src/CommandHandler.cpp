@@ -31,7 +31,8 @@ const std::unordered_map<std::string, CmdFn> CommandHandler::_dispatch_table = {
 	{"JOIN", &CommandHandler::handleJoin},
 	{"PART", &CommandHandler::handlePart},
 	{"TOPIC", &CommandHandler::handleTopic},
-	{"KICK", &CommandHandler::handleKick}
+	{"KICK", &CommandHandler::handleKick},
+	{"INVITE", &CommandHandler::handleInvite}
 };
 
 CommandHandler::CommandHandler(const std::string& password, Server* server)
