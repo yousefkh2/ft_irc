@@ -93,3 +93,17 @@ bool Channel::isInvited(Client* client) const {
 void Channel::removeInvitedClient(Client* client) {
     _invitedClients.erase(client);
 }
+
+bool Channel::hasKey() const {
+    return _hasKey;
+}
+
+const std::string& Channel::getKey() const {
+    return _key;
+}
+
+void Channel::setKey(const std::string&key) {
+    _key = key;
+    _hasKey = true;
+}
+
