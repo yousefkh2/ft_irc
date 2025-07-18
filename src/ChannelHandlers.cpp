@@ -40,7 +40,18 @@ if (channel->hasClient(&client)) {
 return;
 }
 
+// Check if channel is invite-only and user is not invited
+if (channel->isInviteOnly() && !channel->isInvited(&client)) {
+  sendNumeric(client, 473, channelName + " :Cannot join channel (+i)");
+  return ;
+}
+
 channel->addClient(&client);
+
+// If user was invited, remove them from the invited list (they're now in the channel)
+if (channel->isInvited(&client)) {
+  channel->removeInvitedClient(&client);
+}
 
 // Defensive programming for message construction
 std::string nick = client.nickname();
