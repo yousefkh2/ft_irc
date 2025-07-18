@@ -66,6 +66,48 @@ void CommandHandler::handleChannelMode(Client& client, const std::vector<std::st
         switch (mode) {
             case 'i':
                 handleInviteOnlyMode(client, channel, adding);
+                break ;
+            case 't':
+                handleTopicRestrictionMode(client, channel, adding);
+                break ;
+            case 'o':
+                if (paramIndex < params.size()) {
+                    handleOperatorMode(client, channel, adding, params[paramIndex]);
+                    paramIndex++;
+                } else {
+                    sendNumeric(client, 461, "MODE :Not enough parameters");
+                    return ;
+                }
+                break ;
+            case 'k':
+                if (adding) {
+                    if (paramIndex < params.size()) {
+                        handleChannelKeyMode(client, channel, true, params[paramIndex]);
+                        paramIndex++;
+                    } else {
+                        sendNumeric(client, 461, "MODE :not enough parameters");
+                        return ;
+                    }
+                } else {
+                    handleChannelKeyMode(client, channel, false, "");
+                }
+                break ;
+            case 'l':
+                if (adding) {
+                    if (paramIndex < params.size()) {
+                        handleUserLimitMode(client, channel, true, params[paramIndex]);
+                        paramIndex++;
+                    } else {
+                        sendNumeric(client, 461, "MODE :Not enough parameters");
+                        return ;
+                    }
+                } else {
+                    handleUserLimitMode(client, channel, false, "");
+                }
+                break ;
+            default:
+                sendNumeric(client, 472, channelName + " :Unknown mode char");
+                break;
         }
     }
 }
