@@ -44,7 +44,7 @@ return;
 // Check for key
 if (channel->hasKey()) {
   if (channelKey.empty() || channelKey != channel->getKey()) {
-    sendNumeric(client, 475, channelName + " :Cannot join channel (+k)");
+    sendNumeric(client, 475, channelName + " :Cannot join channel, password protected");
     return ;
   }
 }
@@ -52,14 +52,14 @@ if (channel->hasKey()) {
 // Chek for user limit
 if (channel->hasUserLimit()) {
   if (channel->getClientCount() >= channel->getUserLimit()) {
-    sendNumeric(client, 471, channelName + " :Cannot join channel (+l)");
+    sendNumeric(client, 471, channelName + " :Cannot join channel due to limit restriction)");
     return ;
   }
 }
 
 // Check if channel is invite-only and user is not invited
 if (channel->isInviteOnly() && !channel->isInvited(&client)) {
-  sendNumeric(client, 473, channelName + " :Cannot join channel (+i)");
+  sendNumeric(client, 473, channelName + " :Cannot join channel due to invite only mode");
   return ;
 }
 
