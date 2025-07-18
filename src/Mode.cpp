@@ -111,3 +111,13 @@ void CommandHandler::handleChannelMode(Client& client, const std::vector<std::st
         }
     }
 }
+
+void CommandHandler::handleInviteOnlyMode(Client& client, Channel* channel, bool adding) {
+    if (adding != channel->isInviteOnly()) {
+        channel->setInviteOnly(adding);
+        std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@localhost MODE " + channel->getName() + " " + (adding ? "+i" : "-i");
+        sendToChannel(channel, modeMsg);
+        std::cout << "Channel " << channel->getName() << " invite-only mode " << (adding ? "enabled" : "disabled") << " by " << client.nickname() << std::endl;
+    }
+}
+
