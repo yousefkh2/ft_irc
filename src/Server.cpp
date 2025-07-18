@@ -170,13 +170,12 @@ Channel* Server::getChannel(const std::string& name)
 // Creates a new channel with given name and returns pointer to it
 Channel* Server::createChannel(const std::string& name)
 {
-	// Check if channel already exists
 	if (channelExists(name))
 		return getChannel(name);
 	// Create new channel using emplace (constructs in-place)
 	auto result = _channels.emplace(name, Channel(name));
 	std::cout << "Created new channel: " << name << std::endl;
-	return &result.first->second;
+	return &result.first->second; // iterator->second is the Channel object
 }
 
 // Removes a channel if it exists and is empty

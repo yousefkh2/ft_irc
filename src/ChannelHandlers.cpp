@@ -20,12 +20,6 @@ sendNumeric(client, 403, channelName + " :No such channel");
 return;
 }
 
-// Validate client state more thoroughly
-if (client.nickname().empty() || client.username().empty()) {
-sendNumeric(client, 451, ":Registration incomplete");
-return;
-}
-
 Channel *channel = _server->getChannel(channelName);
 if (!channel) {
 channel = _server->createChannel(channelName);
@@ -41,7 +35,6 @@ if (channel->hasClient(&client)) {
 return;
 }
 
-// Check for key
 if (channel->hasKey()) {
   if (channelKey.empty() || channelKey != channel->getKey()) {
     sendNumeric(client, 475, channelName + " :Cannot join channel, password protected");
@@ -69,8 +62,6 @@ channel->addClient(&client);
 if (channel->isInvited(&client)) {
   channel->removeInvitedClient(&client);
 }
-
-// Defensive programming for message construction
 std::string nick = client.nickname();
 std::string user = client.username();
 
@@ -138,6 +129,8 @@ void CommandHandler::handlePart(Client& client, const std::vector<std::string>& 
     sendToChannel(channel, partMsg);
     bool wasOperator = channel->isOperator(&client);
     channel->removeClient(&client);
+
+	
     if (wasOperator && channel->getClientCount() > 0){
       std::set<Client*> clients = channel->getClients();
       if (!clients.empty()) {
