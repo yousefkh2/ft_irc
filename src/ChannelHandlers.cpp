@@ -279,3 +279,53 @@ void CommandHandler::handleKick(Client& client, const std::vector<std::string>& 
     }
     std::cout << "Client " << client.nickname() << " kicked " << targetNick << " from " << channelName << std::endl;
 }
+
+void CommandHandler::handleInvite(Client& client, const std::vector<std::string>& params) {
+  if (!client.isRegistered()) {
+    sendNumeric(client, 451, ":You have not registered");
+    return ;
+  }
+  if (params.size() < 2) { // usage INVITE <nickname> <channel>
+    sendNumeric(client, 461, "INVITE :Not enough parameters");
+    return ;
+  }
+  std::string targetNick = params[0];
+  std::string channelName = params[1];
+  if (!isValidChannelName(channelName)) {
+    sendNumeric(client, 403, channelName + " :No such channel");
+    return ;
+  }
+  Channel* channel = _server->getChannel(channelName);
+  if (!channel) {
+    sendNumeric(client, 403, channelName + " :No such channel");
+    return ;
+  }
+  if (!channel->hasClient(&client)) {
+    sendNumeric(client, 442, channelName + " :You're not on that channel");
+    return ;
+  }
+  if (!channel->isOperator(&client)) {
+    sendNumeric(client, 482, channelName + " :You are not channel operator");
+    return ;
+  }
+  Client* targetClient = nullptr;
+  for (auto& clientPair : _server->getClients()) {
+    if (clientPair.second.nickname() == targetNick) {
+      targetClient = const_cast<Client*>(&clientPair.second);
+      break ;
+    }
+  }
+  if (!targetClient) {
+    sendNumeric(client, 401, targetNick + " :No such nick or channel");
+    return ;
+  }
+  if (channel->hasClient(targetClient)) { //Cannot invite people that are already in the channel
+    sendNumeric(client, 443, targetNick + " " + channelName + " :is already on channel");
+    return ;
+  }
+  channel->addInvitedClient(targetClient);
+  sendNumeric(client, 341, targetNick + " " + channelName);
+  std::string inviteMsg = ":" + client.nickname() + "!" + client.username() + "@localhost INVITE " + targetNick + " " + channelName;
+  sendToClient(*targetClient, inviteMsg);
+  std::cout << "Client " << client.nickname() << " invited " << targetNick << " to channel " << channelName << std::endl;
+}

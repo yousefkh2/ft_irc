@@ -8,10 +8,10 @@ public:
 	int getFd() const;
 	std::string& buffer();
 
-	const std::string& nickname();
+	const std::string& nickname() const;
 	void setNickname(const std::string& nick);
 
-	const std::string& username();
+	const std::string& username() const;
 	void setUsername(const std::string& user);
 
 	// registration flags
