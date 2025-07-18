@@ -19,5 +19,32 @@ void CommandHandler::handleMode(Client& client, const std::vector<std::string>& 
 }
 
 void CommandHandler::handleChannelMode(Client& client, const std::vector<std::string>& params) {
-    
+    std::string channelName = params[0];
+    Channel* channel = _server->getChannel(channelName);
+    if (!channel) {
+        sendNumeric(client, 403, channelName + " :No such channel");
+        return;
+    }
+    if (!channel->hasClient(&client)) {
+        sendNumeric(client, 442, channelName + " :You're not on that channel");
+        return;
+    }
+    if (params.size() == 1) { // Shoz current mode if nothing provided
+        std::string modeString = "+";
+        std::string modeParams = "";
+        if (channel->isInviteOnly())
+            modeString += "i";
+        if (channel->hasKey()) {
+            modeString += "k";
+            modeParams += " " + channel->getKey();
+        }
+        if (channel->hasUserLimit()) {
+            modeString += "l";
+            modeParams += " " + std::to_string(channel->getUserLimit());
+        }
+        if (modeString == "+")
+            modeString = "+"; // Nothing set
+        sendNumeric(client, 324, channelName + " " + modeString + modeParams);
+        return ;
+    }   
 }
