@@ -46,7 +46,7 @@ class Channel
 	    // Channel user limit part
 	    bool hasUserLimit() const;
 	    size_t getUserLimit() const;
-	    void setUserLimit(size_t limit);
+	    size_t setUserLimit(size_t limit);
 	    void removeUserLimit();
 
     private:

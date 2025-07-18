@@ -107,3 +107,25 @@ void Channel::setKey(const std::string&key) {
     _hasKey = true;
 }
 
+void Channel::removeKey() {
+    _key.clear();
+    _hasKey = false;
+}
+
+bool Channel::hasUserLimit() const {
+    return _hasUserLimit;
+}
+
+size_t Channel::getUserLimit() const {
+    return _hasUserLimit;
+}
+
+size_t Channel::setUserLimit(size_t limit) {
+    _userLimit = limit;
+    _hasUserLimit = true;
+}
+
+void Channel::removeUserLimit() {
+    _userLimit = 0;
+    _hasUserLimit = false;
+}
