@@ -42,6 +42,7 @@ class Channel
         std::string _topic;
         std::set<Client*> _clients; // All clients currently in the channel
         std::set<Client*> _operators;
+        std::set<Client*> _invitedClients;
         // Channel modes
         bool _inviteOnly = false;      // If true, only invited users can join
         bool _topicRestriction = true; // If true, only operators can change topic

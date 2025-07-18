@@ -20,6 +20,7 @@ public:
 	Channel* createChannel(const std::string& name);
 	void removeChannel(const std::string& name);
     bool channelExists(const std::string& name) const;
+	const std::unordered_map<int, Client>& getClients() const;
 
 	// forbid copying and assignment
     Server(const Server&) = delete;

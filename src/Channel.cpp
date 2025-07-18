@@ -81,3 +81,15 @@ void Channel::removeOperator(Client* client)
 {
     _operators.erase(client);
 }
+
+void Channel::addInvitedClient(Client* client) {
+    _invitedClients.insert(client);
+}
+
+bool Channel::isInvited(Client* client) const {
+    return _invitedClients.find(client) != _invitedClients.end();
+}
+
+void Channel::removeInvitedClient(Client* client) {
+    _invitedClients.erase(client);
+}
