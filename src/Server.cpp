@@ -221,3 +221,16 @@ void Server::cleanup() {
 const std::unordered_map<int, Client>& Server::getClients() const {
   return _clients;
 }
+
+
+void Server::broadcastToClientChannels(Client * client, const std::string& message, CommandHandler& handler)
+{
+	for (auto& channelPair : _channels) {
+		Channel& channel = channelPair.second;
+		if (channel.hasClient(client)) {
+			for (Client* c : channel.getClients()) {
+				handler.sendToClient(*c, message);
+			}
+		}
+	}
+}

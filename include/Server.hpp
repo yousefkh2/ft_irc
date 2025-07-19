@@ -22,6 +22,9 @@ public:
     bool channelExists(const std::string& name) const;
 	const std::unordered_map<int, Client>& getClients() const;
 
+	//broadcasting
+	void broadcastToClientChannels(Client* client, const std::string& message, CommandHandler& handler);
+	
 	// forbid copying and assignment
     Server(const Server&) = delete;
     Server& operator=(const Server&) = delete;

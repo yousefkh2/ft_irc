@@ -22,6 +22,7 @@ class CommandHandler {
 	* if the client completes all THREE, mark as registered
 	*/
 	void handle(Client& client, const Command& cmd);
+	void sendToClient(Client& client, const std::string& message);
 
 	private:
 	void handlePass(Client& client, const std::vector<std::string>& params);
@@ -37,7 +38,6 @@ class CommandHandler {
 	void handleMode(Client& client, const std::vector<std::string>& params);
 
 	// Utility functions
-    void sendToClient(Client& client, const std::string& message);
     void sendToChannel(Channel* channel, const std::string& message, Client* exclude = nullptr);
     bool isValidChannelName(const std::string& name);
 

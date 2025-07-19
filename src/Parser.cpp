@@ -25,6 +25,10 @@ std::vector<Command> Parser::parse(std::string &data, size_t &used) {
 
       if (space_pos == std::string::npos || space_pos == prefix_start) { // no space found. e.g. "":myserverNOTICE:Hello"
 		std::cerr << "Malformed prefix in line: '" << line << "'\n";
+		Command cmd;
+		cmd.name = "MALFORMED";
+		cmd.params.push_back(line);
+		commands.push_back(cmd);
         continue;
 	   }
       cmd.prefix = line.substr(prefix_start, space_pos - prefix_start);

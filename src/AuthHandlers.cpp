@@ -1,4 +1,5 @@
 #include "../include/CommandHandler.hpp"
+#include "../include/Server.hpp"
 
 
 
@@ -37,10 +38,26 @@ void CommandHandler::handleNick(Client& client, const std::vector<std::string>& 
 		return;
 	}
 
-	// TODO: Check if nickname is already in use by another client
-	// sendNumeric(client, 433, params[0] + " :Nickname is already in use");
-	client.setNickname(params[0]);
+	std::string requestedNick = params[0];
+	
+	for (const auto& clientPair : _server->getClients()) {
+		const Client& otherClient = clientPair.second;
+		if (&otherClient != &client && //not checking against self
+			otherClient.hasNick() && 
+			otherClient.nickname() == requestedNick) {
+			sendNumeric(client, 433, requestedNick + " :Nickname is already in use");
+			return;
+		}
+	}
+	std::string oldNick = client.hasNick() ? client.nickname() : "";
+
+	client.setNickname(requestedNick);
 	client.setNickSet(true);
+
+	if (client.isRegistered() && !oldNick.empty()) {
+		std::string nickMsg = ":" + oldNick + "!" + client.username() + "@localhost NICK :" + requestedNick;
+		_server->broadcastToClientChannels(&client, nickMsg, *this);
+	}
 	std::cout << "Client " << client.getFd()
-		  << " set NICK to " << params[0] << "\n";
+		  << " set NICK to " << requestedNick << "\n";
 }
