@@ -21,7 +21,7 @@ public:
 	void removeChannel(const std::string& name);
     bool channelExists(const std::string& name) const;
 	const std::unordered_map<int, Client>& getClients() const;
-
+	bool isNicknameInUse(const std::string& nickname) const;
 	// forbid copying and assignment
     Server(const Server&) = delete;
     Server& operator=(const Server&) = delete;
