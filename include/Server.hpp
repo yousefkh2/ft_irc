@@ -32,6 +32,7 @@ private:
 	void handleClientData(size_t idx);
 	void cleanup();
 	void setNonBlocking(int fd);
+	void removeClientFromAllChannels(Client* client);  // Clean up client from all channels
 
     int _port;
     std::string     _password;

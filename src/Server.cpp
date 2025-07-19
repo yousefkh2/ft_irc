@@ -17,7 +17,7 @@
 
 Server::Server(int port, const std::string &password)
     : _port(port), _password(password), _server_fd(-1), _handler(password, this) {
-  initSocket(); // later
+  initSocket();
 }
 Server::~Server() { cleanup(); }
 
@@ -85,7 +85,8 @@ int Server::run() {
       return 1;
     }
 
-    for (size_t i = 0; i < _fds.size(); ++i) {
+    // back to front to avoid index problems when removing disconnected clients
+    for (int i = static_cast<int>(_fds.size()) - 1; i >= 0; --i) {
       bool has_incoming_data = (_fds[i].revents & POLLIN);
       if (!has_incoming_data)
         continue;
@@ -130,6 +131,10 @@ void Server::handleClientData(size_t idx) {
   int n = recv(fd, buffer, sizeof(buffer), 0); // recv is the network version of read()
   if (n <= 0) {
     std::cout << "Client " << fd << " disconnected\n";
+	auto clientIt = _clients.find(fd);
+    if (clientIt != _clients.end()) {
+        removeClientFromAllChannels(&clientIt->second);
+	}
     close(fd);
     _fds.erase(_fds.begin() + idx);
     _clients.erase(fd);
@@ -191,6 +196,13 @@ void Server::removeChannel(const std::string& name)
 			_channels.erase(it);
 		}
 	}
+}
+
+void Server::removeClientFromAllChannels(Client* client) {
+    for (auto& channelPair : _channels) {
+        Channel& channel = channelPair.second;
+        channel.removeClient(client);
+    }
 }
 
 // Checks if a channel exists

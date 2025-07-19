@@ -29,6 +29,7 @@ void Channel::removeClient(Client* client)
 {
     _clients.erase(client);
     _operators.erase(client);
+    _invitedClients.erase(client);
 }
 
 bool Channel::hasClient(Client *client) const
@@ -117,7 +118,7 @@ bool Channel::hasUserLimit() const {
 }
 
 size_t Channel::getUserLimit() const {
-    return _hasUserLimit;
+    return _userLimit;  // Return the actual user limit, not the boolean flag
 }
 
 size_t Channel::setUserLimit(size_t limit) {
