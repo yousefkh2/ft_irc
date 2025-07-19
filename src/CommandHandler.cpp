@@ -6,6 +6,7 @@
 #include <vector>
 #include <algorithm>
 #include "../include/Server.hpp"
+#include "../include/Utils.hpp"
 #include <sys/socket.h>
 
 
@@ -25,6 +26,8 @@ for (char& c : result)
 */
 
 const std::unordered_map<std::string, CmdFn> CommandHandler::_dispatch_table = {
+	{"PING", &CommandHandler::handlePing},
+	{"CAP", &CommandHandler::handleCap},
 	{"PASS", &CommandHandler::handlePass},
 	{"NICK", &CommandHandler::handleNick},
 	{"USER", &CommandHandler::handleUser},
@@ -40,7 +43,7 @@ CommandHandler::CommandHandler(const std::string& password, Server* server)
     : _password(password), _server(server) {}
 
   void CommandHandler::sendNumeric(Client& client, int code, const std::string& message) {
-	std::string response = ":ft_irc.server " + std::to_string(code) + " " + 
+	std::string response = ":" + std::string(SERVER_HOSTNAME) + " " + std::to_string(code) + " " + 
 	client.nickname() + " " + message + "\r\n";
 	send(client.getFd(), response.c_str(), response.length(), 0);
 }
@@ -52,11 +55,11 @@ void CommandHandler::sendWelcomeSequence(Client& client) {
 	// 001 RPL_WELCOME
 	sendNumeric(client, 1, ":Welcome to the IRC Network " + nick + "!" + user + "@localhost");
 	// 002 RPL_YOURHOST
-	sendNumeric(client, 2, ":Your host is ft_irc.server, running version 1.0");
+	sendNumeric(client, 2, ":Your host is " + std::string(SERVER_HOSTNAME) + ", running version 1.0");
 	// 003 RPL_CREATED
 	sendNumeric(client, 3, ":This server was created today");
 	// 004 RPL_MYINFO
-	sendNumeric(client, 4, "ft_irc.server 1.0 - -");
+	sendNumeric(client, 4, std::string(SERVER_HOSTNAME) + " 1.0 - -");
 }
 
   void CommandHandler::handle(Client& client, const Command& cmd) {

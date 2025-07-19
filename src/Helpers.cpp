@@ -1,5 +1,6 @@
 #include "../include/CommandHandler.hpp"
 #include "../include/Channel.hpp"
+#include "../include/Utils.hpp"
 #include <cctype>
 #include <iostream>
 #include <string>
@@ -10,7 +11,7 @@
 
 // Helper function to send message to a client
 void CommandHandler::sendToClient(Client& client, const std::string& message) {
-    std::string fullMessage = message + "\r\n";
+    std::string fullMessage = ":" + std::string(SERVER_HOSTNAME) + " " + message + "\r\n";
     send(client.getFd(), fullMessage.c_str(), fullMessage.length(), 0);
 }
 
