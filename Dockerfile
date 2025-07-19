@@ -1,3 +1,9 @@
+# docker build -t ft_irc .
+# docker run -it -p 6667:6667 -v "$(pwd):/app" ft_irc
+# ./ircserv 6667 password
+# docker exec -it *container_id* irssi
+# /connect localhost 6667
+
 FROM debian:latest
 
 RUN apt-get update && apt-get install -y \
