@@ -53,7 +53,7 @@ void CommandHandler::sendWelcomeSequence(Client& client) {
 	std::string user = client.username();
 
 	// 001 RPL_WELCOME
-	sendNumeric(client, 1, ":Welcome to the IRC Network " + nick + "!" + user + "@localhost");
+	sendNumeric(client, 1, ":Welcome to the IRC Network " + nick + "!" + user + "@" + client.hostname());
 	// 002 RPL_YOURHOST
 	sendNumeric(client, 2, ":Your host is " + std::string(SERVER_HOSTNAME) + ", running version 1.0");
 	// 003 RPL_CREATED

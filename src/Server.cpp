@@ -116,6 +116,7 @@ void Server::acceptNewClient() {
 		std::cout << "New connection: " << ip << ":" << ntohs(client_addr.sin_port)
 							<< std::endl;
 		_clients[client_fd] = Client(client_fd);
+		_clients[client_fd].setHostname(ip);
 
 		pollfd client_pollfd;
 		client_pollfd.fd = client_fd;

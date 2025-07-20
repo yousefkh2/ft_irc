@@ -66,7 +66,7 @@ std::string nick = client.nickname();
 std::string user = client.username();
 
 // Send JOIN message to all clients in channel (including the joiner)
-std::string joinMsg = ":" + nick + "!" + user + "@localhost JOIN " + channelName;
+std::string joinMsg = ":" + nick + "!" + user + "@" + client.hostname() + " JOIN " + channelName;
 sendToChannel(channel, joinMsg);
 
 // Send topic if it exists
@@ -125,7 +125,7 @@ void CommandHandler::handlePart(Client& client, const std::vector<std::string>& 
 
     std::string nick = client.nickname();
     std::string user = client.username();
-    std::string partMsg = ":" + nick + "!" + user + "@localhost PART " + channelName;
+    std::string partMsg = ":" + nick + "!" + user + " @" + client.hostname() + " PART " + channelName;
     if (!partMessage.empty())
       partMsg += " :" + partMessage;
     sendToChannel(channel, partMsg);
@@ -198,7 +198,7 @@ void CommandHandler::handleTopic(Client& client, const std::vector<std::string>&
   }
   channel->setTopic(newTopic);
   std::string user = client.username();
-  std::string topicMsg = ":" + nick + "!" + user + "@localhost TOPIC " + channelName + " :" + newTopic;
+  std::string topicMsg = ":" + nick + "!" + user + " @" + client.hostname() + " TOPIC " + channelName + " :" + newTopic;
   sendToChannel(channel, topicMsg);
   std::cout << "Topic for " << channelName << " changed by " << nick << " to: " << newTopic << std::endl;
 }
@@ -247,7 +247,7 @@ void CommandHandler::handleKick(Client& client, const std::vector<std::string>& 
     sendNumeric(client, 484, channelName + " :Cannot kick yourself");
     return ;
   }
-  std::string kickMsg = ":" + client.nickname() + "!" + client.username() + "@localhost KICK " + channelName + " " + targetNick;
+  std::string kickMsg = ":" + client.nickname() + "!" + client.username() + " @" + client.hostname() + " KICK " + channelName + " " + targetNick;
   if (!kickMessage.empty())
     kickMsg += " :" + kickMessage;
   sendToChannel(channel, kickMsg);
@@ -304,7 +304,7 @@ void CommandHandler::handleInvite(Client& client, const std::vector<std::string>
   }
   channel->addInvitedClient(targetClient);
   sendNumeric(client, 341, targetNick + " " + channelName);
-  std::string inviteMsg = ":" + client.nickname() + "!" + client.username() + "@localhost INVITE " + targetNick + " " + channelName;
+  std::string inviteMsg = ":" + client.nickname() + "!" + client.username() + " @" + client.hostname() + " INVITE " + targetNick + " " + channelName;
   sendToClient(*targetClient, inviteMsg);
   std::cout << "Client " << client.nickname() << " invited " << targetNick << " to channel " << channelName << std::endl;
 }
