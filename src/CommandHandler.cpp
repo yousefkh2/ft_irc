@@ -43,10 +43,12 @@ const std::unordered_map<std::string, CmdFn> CommandHandler::_dispatch_table = {
 CommandHandler::CommandHandler(const std::string& password, Server* server)
     : _password(password), _server(server) {}
 
-  void CommandHandler::sendNumeric(Client& client, int code, const std::string& message) {
+void CommandHandler::sendNumeric(Client& client, int code, const std::string& message) {
 	std::string response = ":" + std::string(SERVER_HOSTNAME) + " " + std::to_string(code) + " " + 
 	client.nickname() + " " + message + "\r\n";
 	send(client.getFd(), response.c_str(), response.length(), 0);
+
+	std::cout << "got numeric " << code << std::endl;
 }
 
 void CommandHandler::sendWelcomeSequence(Client& client) {
@@ -67,19 +69,31 @@ void CommandHandler::sendWelcomeSequence(Client& client) {
 	std::cout << "Handler processing: " << cmd.name << std::endl;
 
 		bool wasRegistered = client.isRegistered();
+		std::string upperCmd = toUpperIrc(cmd.name);
 
-		auto it = _dispatch_table.find(toUpperIrc(cmd.name));
+		if (!client.isRegistered() && 
+				upperCmd != "CAP" && 
+				upperCmd != "PASS" && 
+				upperCmd != "NICK" && 
+				upperCmd != "USER") {
+			sendNumeric(client, 451, ":You have not registered");
+			return;
+		}
+
+		auto it = _dispatch_table.find(upperCmd);
 		if (it != _dispatch_table.end()) {
 			(this->*it->second)(client, cmd.params);
 		} else {
 			sendNumeric(client, 421, cmd.name + " :Unknown command"); //ERR_UNKNOWNCOMMAND
 		}
 
-	if (!wasRegistered && client.isRegistered()) {
-		std::cout << "Client " << client.getFd()
-				<< " fully registered (PASS, NICK, USER done)\n";
-		sendWelcomeSequence(client);
-	}}
+		if (!wasRegistered && client.isRegistered()) {
+			std::cout << "Client " << client.getFd()
+					<< " fully registered (PASS, NICK, USER done)\n";
+			sendWelcomeSequence(client);
+			sendNumeric(client, 376, ":End of /MOTD command");
+		}
+	}
 
-	
+
 

@@ -152,15 +152,15 @@ void Server::handleClientData(size_t idx) {
 
 	buf.erase(0, used); // erases from position 0 (beginning of string) up to position used (erases complete commands)
 	for (auto &cmd : cmds) {
-		_handler.handle(client, cmd);
 		std::cout << "Parsed command: " << cmd.name;
 		if (!cmd.params.empty()) {
 			std::cout << " [";
 			for (auto &p : cmd.params)
-				std::cout << p << " ";
+			std::cout << p << " ";
 			std::cout << "]";
 		}
 		std::cout << std::endl;
+		_handler.handle(client, cmd);
 	}
 }
 

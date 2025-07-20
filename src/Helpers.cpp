@@ -9,6 +9,16 @@
 #include <algorithm>
 #include <sys/socket.h>
 
+void CommandHandler::handlePing(Client& client, const std::vector<std::string>& params) {
+	std::string response;
+	if (params.empty()) {
+		response = ":" + std::string(SERVER_HOSTNAME) + " PONG " + std::string(SERVER_HOSTNAME);
+	} else {
+		response = ":" + std::string(SERVER_HOSTNAME) + " PONG " + std::string(SERVER_HOSTNAME) + " :" + params[0];
+	}
+	send(client.getFd(), (response + "\r\n").c_str(), response.length() + 2, 0);
+}
+
 // Helper function to send message to a client
 void CommandHandler::sendToClient(Client& client, const std::string& message) {
     std::string fullMessage = ":" + std::string(SERVER_HOSTNAME) + " " + message + "\r\n";

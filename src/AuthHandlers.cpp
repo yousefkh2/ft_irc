@@ -2,14 +2,6 @@
 #include "../include/Server.hpp"
 #include "../include/Utils.hpp"
 
-void CommandHandler::handlePing(Client& client, const std::vector<std::string>& params) {
-	if (!params.empty()) {
-		std::string response = "PONG : " + std::string(SERVER_HOSTNAME) + " :" + params[0];
-		sendToClient(client, response);
-		std::cout << "PING-PONGED\n"; 
-	}
-}
-
 // irssi will wait for CAP LS response, might as well recognise CAP
 void CommandHandler::handleCap(Client& client, const std::vector<std::string>& params) {
 	if (params.empty()) {
@@ -36,15 +28,23 @@ void CommandHandler::handlePass(Client& client, const std::vector<std::string>& 
 	client.setPassed(true);
 }
 
-void CommandHandler::handleUser(Client& client,  const std::vector<std::string>& params) {
+void CommandHandler::handleUser(Client& client, const std::vector<std::string>& params) {
+	if (client.isRegistered()) {
+		sendNumeric(client, 462, ":You may not reregister"); // ERR_ALREADYREGISTERED
+		return;
+	}
+
 	if (params.size() < 4) {
 		sendNumeric(client, 461, "USER :Not enough parameters");
 		return;
 	}
-	client.setUsername(params[0]);
-	client.setUserSet(true);
-	std::cout << "Client " << client.getFd()
-		  << " set USER to " << params[0] << "\n";
+
+	if (!client.hasUser()) {
+		client.setUsername(params[0]);
+		client.setUserSet(true);
+		std::cout << "Client " << client.getFd()
+			  << " set USER to " << params[0] << "\n";
+	}
 }
 
 void CommandHandler::handleNick(Client& client, const std::vector<std::string>& params) {
