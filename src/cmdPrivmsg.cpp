@@ -1,4 +1,7 @@
 #include "../include/CommandHandler.hpp"
+#include "../include/Server.hpp"
+#include "../include/Channel.hpp"
+#include "../include/Utils.hpp"
 
 static std::vector<std::string> splitString(const std::string& str, char delimiter) {
 	std::vector<std::string> result;
@@ -8,7 +11,7 @@ static std::vector<std::string> splitString(const std::string& str, char delimit
 		while (start < str.size() && str[start] == delimiter)
 			++start;
 		auto end = str.find(delimiter, start);
-		if (end == string::npos)
+		if (end == std::string::npos)
 			end = str.size();
 		if (start < end)
 			result.emplace_back(str.substr(start, end - start));
@@ -18,7 +21,7 @@ static std::vector<std::string> splitString(const std::string& str, char delimit
 	return result;
 }
 
-void CommandHandler::cmdPrivmsg(Client& client, const std::vector<std::string>& params)
+void CommandHandler::handlePrivmsg(Client& client, const std::vector<std::string>& params)
 {
 	if (!client.isRegistered())
 		return ;
@@ -57,7 +60,7 @@ void CommandHandler::cmdPrivmsg(Client& client, const std::vector<std::string>& 
 				continue ;
 			}
 			std::string fullMsg = ":" + client.nickname() + "!" + 
-								client.username() + "@" + client.hostname() + " PRIVMSG " + target + " :" + message;
+								client.username() + "@" + client.hostname() + " PRIVMSG " + target + " :" + params[1];
 			// send to all channel members except sender
 			for (const auto& member : channel->getClients()) {
 				if (member != &client) {
@@ -79,7 +82,7 @@ void CommandHandler::cmdPrivmsg(Client& client, const std::vector<std::string>& 
 				continue ;
 			}
 			std::string fullMsg = ":" + client.nickname() + "!" + 
-								client.username() + "@" + client.hostname() + " PRIVMSG " + target + " :" + message;
+								client.username() + "@" + client.hostname() + " PRIVMSG " + target + " :" + params[1];
 			sendToClient(*targetClient, fullMsg);
 		}
 	}

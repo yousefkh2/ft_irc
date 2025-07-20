@@ -37,6 +37,7 @@ class CommandHandler {
 	void handleKick(Client& client, const std::vector<std::string>& params);
 	void handleInvite(Client& client, const std::vector<std::string>& params);
 	void handleMode(Client& client, const std::vector<std::string>& params);
+	void handlePrivmsg(Client& client, const std::vector<std::string>& params);
 
 	// Utility functions
     void sendToClient(Client& client, const std::string& message);
