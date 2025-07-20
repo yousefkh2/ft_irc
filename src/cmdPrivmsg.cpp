@@ -30,7 +30,7 @@ void CommandHandler::handlePrivmsg(Client& client, const std::vector<std::string
 		sendNumeric(client, 411, ":No recipient given (PRIVMSG)");	
 		return ; // ERR_NORECIPIENT
 	}
-	if (params.size() == 2)
+	if (params[1].empty())
 	{
 		sendNumeric(client, 412, ":No text to send");	
 		return ; // ERR_NOTEXTTOSEND
