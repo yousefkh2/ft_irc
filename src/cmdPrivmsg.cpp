@@ -20,14 +20,18 @@ static std::vector<std::string> splitString(const std::string& str, char delimit
 
 void CommandHandler::cmdPrivmsg(Client& client, const std::vector<std::string>& params)
 {
-	if (client.isRegistered() == false)
+	if (!client.isRegistered())
 		return ;
 	if (params.size() < 2)
-		return ; // ERR_NORECIPIENT (411)
-	// "<client> :No recipient given (<command>)"
-	else if (params.size() == 2)
-		return ; // ERR_NOTEXTTOSEND (412)
-	
+	{
+		sendNumeric(client, 411, ":No recipient given (PRIVMSG)");	
+		return ; // ERR_NORECIPIENT
+	}
+	if (params.size() == 2)
+	{
+		sendNumeric(client, 412, ":No text to send");	
+		return ; // ERR_NOTEXTTOSEND
+	}
 	/* SPECIAL TARGETS - probably out of scope too*/
 	// *
 	// Use the active nickname or channel
@@ -35,25 +39,48 @@ void CommandHandler::cmdPrivmsg(Client& client, const std::vector<std::string>& 
 	// Last person who sent you a /msg
 	// .
 	// Last person you sent a /msg to
-	std::vector<std::string> targets = splitString(params[0], ',');
-	if (targets.size() < 1)
-		return ; // ERR_NORECIPIENT (411)
-	// "<client> :No recipient given (<command>)"
-	for (std::vector<std::string>::const_iterator it = targets.begin(); it != targets.end(); ++it)
-	{
-		std::string target = *it;
-		if (target[0] == '#')
-		{
-			//loop through server _channels
-			// ERR_CANNOTSENDTOCHAN (404) - if cannot send to channel
-			// "<client> <channel> :No such channel"
-		}
-		else
-		{
-			//loop through server _clients
-			// ERR_NOSUCHNICK (401) - if cannot send to user
-			// "<client> <nickname> :No such nick/channel"
 
+	std::vector<std::string> targets = splitString(params[0], ',');
+	if (targets.empty())
+	{
+		sendNumeric(client, 411, ":No recipient given (PRIVMSG)"); // ERR_NORECIPIENT
+		return ;
+	}
+	
+	for (const std::string& target : targets)
+	{
+		if (target[0] == '#') // send message to channel
+		{
+			Channel* channel = _server->getChannel(target);
+			if (!channel) {
+				sendNumeric(client, 404, target + " :No such channel"); // ERR_CANNOTSENDTOCHAN
+				continue ;
+			}
+			std::string fullMsg = ":" + client.nickname() + "!" + 
+								client.username() + "@" + client.hostname() + " PRIVMSG " + target + " :" + message;
+			// send to all channel members except sender
+			for (const auto& member : channel->getClients()) {
+				if (member != &client) {
+					sendToClient(*member, fullMsg);
+				}
+			}
+		}
+		else // message to client
+		{
+			Client* targetClient = nullptr;
+			for (const auto& pair : _server->getClients()) {
+				if (pair.second.nickname() == target) {
+					targetClient = const_cast<Client*>(&pair.second);
+					break ;
+				}
+			}
+			if (!targetClient) {
+				sendNumeric(client, 401, target + " :No such nick/channel"); // ERR_NOSUCHNICK
+				continue ;
+			}
+			std::string fullMsg = ":" + client.nickname() + "!" + 
+								client.username() + "@" + client.hostname() + " PRIVMSG " + target + " :" + message;
+			sendToClient(*targetClient, fullMsg);
 		}
 	}
 	/* OUT OF SCOPE */
