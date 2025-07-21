@@ -21,7 +21,7 @@ public:
 	void removeChannel(const std::string& name);
     bool channelExists(const std::string& name) const;
 	const std::unordered_map<int, Client>& getClients() const;
-
+	bool isNicknameInUse(const std::string& nickname) const;
 	//broadcasting
 	void broadcastToClientChannels(Client* client, const std::string& message, CommandHandler& handler);
 	

@@ -14,6 +14,9 @@ public:
 	const std::string& username() const;
 	void setUsername(const std::string& user);
 
+	const std::string& hostname() const;
+	void setHostname(const std::string& hostname);
+
 	// registration flags
 	bool hasPassed() const;
 	void setPassed(bool);
@@ -32,6 +35,7 @@ private:
 
 	std::string _nickname;
 	std::string _username;
+	std::string _hostname;
 
 	bool _passed = false;
 	bool _nickSet = false;

@@ -1,5 +1,6 @@
 #include "../include/CommandHandler.hpp"
 #include "../include/Channel.hpp"
+#include "../include/Utils.hpp"
 #include <cctype>
 #include <iostream>
 #include <string>
@@ -8,9 +9,19 @@
 #include <algorithm>
 #include <sys/socket.h>
 
+void CommandHandler::handlePing(Client& client, const std::vector<std::string>& params) {
+	std::string response;
+	if (params.empty()) {
+		response = ":" + std::string(SERVER_HOSTNAME) + " PONG " + std::string(SERVER_HOSTNAME);
+	} else {
+		response = ":" + std::string(SERVER_HOSTNAME) + " PONG " + std::string(SERVER_HOSTNAME) + " :" + params[0];
+	}
+	send(client.getFd(), (response + "\r\n").c_str(), response.length() + 2, 0);
+}
+
 // Helper function to send message to a client
 void CommandHandler::sendToClient(Client& client, const std::string& message) {
-    std::string fullMessage = message + "\r\n";
+    std::string fullMessage = ":" + std::string(SERVER_HOSTNAME) + " " + message + "\r\n";
     send(client.getFd(), fullMessage.c_str(), fullMessage.length(), 0);
 }
 

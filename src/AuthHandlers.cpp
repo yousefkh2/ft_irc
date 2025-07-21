@@ -1,7 +1,17 @@
 #include "../include/CommandHandler.hpp"
 #include "../include/Server.hpp"
+#include "../include/Server.hpp"
+#include "../include/Utils.hpp"
 
-
+// irssi will wait for CAP LS response, might as well recognise CAP
+void CommandHandler::handleCap(Client& client, const std::vector<std::string>& params) {
+	if (params.empty()) {
+		return;
+	}
+	if (params[0] == "LS") {
+		sendToClient(client, "CAP * LS :"); // no capabilities supported
+	}
+}
 
 void CommandHandler::handlePass(Client& client, const std::vector<std::string>& params) {
 	if (client.isRegistered()) {
@@ -19,17 +29,23 @@ void CommandHandler::handlePass(Client& client, const std::vector<std::string>& 
 	client.setPassed(true);
 }
 
+void CommandHandler::handleUser(Client& client, const std::vector<std::string>& params) {
+	if (client.isRegistered()) {
+		sendNumeric(client, 462, ":You may not reregister"); // ERR_ALREADYREGISTERED
+		return;
+	}
 
-
-void CommandHandler::handleUser(Client& client,  const std::vector<std::string>& params) {
 	if (params.size() < 4) {
 		sendNumeric(client, 461, "USER :Not enough parameters");
 		return;
 	}
-	client.setUsername(params[0]);
-	client.setUserSet(true);
-	std::cout << "Client " << client.getFd()
-		  << " set USER to " << params[0] << "\n";
+
+	if (!client.hasUser()) {
+		client.setUsername(params[0]);
+		client.setUserSet(true);
+		std::cout << "Client " << client.getFd()
+			  << " set USER to " << params[0] << "\n";
+	}
 }
 
 void CommandHandler::handleNick(Client& client, const std::vector<std::string>& params) {
@@ -37,24 +53,23 @@ void CommandHandler::handleNick(Client& client, const std::vector<std::string>& 
 		sendNumeric(client, 431, ":No nickname given"); //ERR_NONICKNAMEGIVEN
 		return;
 	}
-
-	std::string requestedNick = params[0];
-	
-	for (const auto& clientPair : _server->getClients()) {
-		const Client& otherClient = clientPair.second;
-		if (&otherClient != &client && //not checking against self
-			otherClient.hasNick() && 
-			otherClient.nickname() == requestedNick) {
-			sendNumeric(client, 433, requestedNick + " :Nickname is already in use");
-			return;
-		}
+	const std::string& requestedNick = params[0];
+	if (requestedNick.empty() || requestedNick.length() > MAX_NICK_LEN) {
+		sendNumeric(client, 432, requestedNick + " :Erroneous nickname"); //ERR_ERRONEUSNICKNAME
+		return ;
 	}
+	if (_server->isNicknameInUse(requestedNick) &&
+		(!client.hasNick() || client.nickname() != requestedNick)) {
+		sendNumeric(client, 433, requestedNick + " :Nickname is already in use"); // ERR_NICKNAMEINUSE
+		return;
+	}
+
 	std::string oldNick = client.hasNick() ? client.nickname() : "";
 
 	client.setNickname(requestedNick);
 	client.setNickSet(true);
 
-	if (client.isRegistered() && !oldNick.empty()) {
+	if (client.isRegistered() && !oldNick.empty() && oldNick != requestedNick) {
 		std::string nickMsg = ":" + oldNick + "!" + client.username() + "@localhost NICK :" + requestedNick;
 		_server->broadcastToClientChannels(&client, nickMsg, *this);
 	}

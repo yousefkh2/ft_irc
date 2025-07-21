@@ -14,6 +14,9 @@ void Client::setNickname(const std::string& nick) { _nickname = nick;}
 const std::string& Client::username() const {return _username;}
 void Client::setUsername(const std::string& user) {_username = user;}
 
+const std::string& Client::hostname() const { return _hostname; }
+void Client::setHostname(const std::string& hostname) { _hostname = hostname; }
+
 bool Client::hasPassed() const {return _passed; }
 void Client::setPassed(bool v) {_passed = v;}
 

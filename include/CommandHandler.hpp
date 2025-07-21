@@ -25,6 +25,8 @@ class CommandHandler {
 	void sendToClient(Client& client, const std::string& message);
 
 	private:
+	void handlePing(Client& client, const std::vector<std::string>& params);
+	void handleCap(Client& client, const std::vector<std::string>& params);
 	void handlePass(Client& client, const std::vector<std::string>& params);
 	void handleNick(Client& client, const std::vector<std::string>& params);
 	void handleUser(Client& client, const std::vector<std::string>& params);
@@ -36,6 +38,7 @@ class CommandHandler {
 	void handleKick(Client& client, const std::vector<std::string>& params);
 	void handleInvite(Client& client, const std::vector<std::string>& params);
 	void handleMode(Client& client, const std::vector<std::string>& params);
+	void handlePrivmsg(Client& client, const std::vector<std::string>& params);
 
 	// Utility functions
     void sendToChannel(Channel* channel, const std::string& message, Client* exclude = nullptr);
