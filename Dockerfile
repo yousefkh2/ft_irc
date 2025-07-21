@@ -1,8 +1,10 @@
 # docker build -t ft_irc .
 # docker run -it -p 6667:6667 -v "$(pwd):/app" ft_irc
 # ./ircserv 6667 password
-# docker exec -it *container_id* irssi
-# /connect localhost 6667
+# docker exec -it *container_id or name* irssi -n yourname
+# /connect -! -4 -noautosendcmd localhost 6667 1234
+
+# optional: -nocap when connecting and remove CAP
 
 FROM debian:latest
 

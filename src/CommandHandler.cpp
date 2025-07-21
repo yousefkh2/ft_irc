@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <vector>
 #include <algorithm>
+#include <iomanip>
 #include "../include/Server.hpp"
 #include "../include/Utils.hpp"
 #include <sys/socket.h>
@@ -44,8 +45,12 @@ CommandHandler::CommandHandler(const std::string& password, Server* server)
     : _password(password), _server(server) {}
 
 void CommandHandler::sendNumeric(Client& client, int code, const std::string& message) {
-	std::string response = ":" + std::string(SERVER_HOSTNAME) + " " + std::to_string(code) + " " + 
-	client.nickname() + " " + message + "\r\n";
+	//without this will send 1 instead of 001
+	std::ostringstream oss;
+	oss << std::setfill('0') << std::setw(3) << code;
+	std::string numericCode = oss.str();
+
+	std::string response = ":" + std::string(SERVER_HOSTNAME) + " " + numericCode + " " + client.nickname() + " " + message + "\r\n";
 	send(client.getFd(), response.c_str(), response.length(), 0);
 
 	std::cout << "got numeric " << code << std::endl;
