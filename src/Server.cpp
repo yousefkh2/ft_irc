@@ -22,16 +22,10 @@ Server::Server(int port, const std::string &password)
 Server::~Server() { cleanup(); }
 
 void Server::setNonBlocking(int fd) {
-		int flags = fcntl(fd, F_GETFL, 0);
-		if (flags < 0) {
-				perror("fcntl F_GETFL");
-				throw std::runtime_error("Failed to get socket flags");
-		}
-		
-		if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0) {
-				perror("fcntl F_SETFL");
-				throw std::runtime_error("Failed to set socket non-blocking");
-		}
+    if (fcntl(fd, F_SETFL, O_NONBLOCK) < 0) {
+        perror("fcntl F_SETFL");
+        throw std::runtime_error("Failed to set socket non-blocking");
+    }
 }
 
 void Server::initSocket() {
@@ -40,15 +34,18 @@ void Server::initSocket() {
 		perror("socket");
 		throw std::runtime_error("Failed to create socket");
 	}
+	
+	int opt = 1;
+	setsockopt(
+			_server_fd, SOL_SOCKET, SO_REUSEADDR, &opt,
+			sizeof(opt)); // allow re-binding after the socket closes without waiting
+
 	// make server socket non-blocking
 	setNonBlocking(_server_fd);
 
 	
 
-	int opt = 1;
-	setsockopt(
-			_server_fd, SOL_SOCKET, SO_REUSEADDR, &opt,
-			sizeof(opt)); // allow re-binding after the socket closes without waiting
+	
 
 	sockaddr_in server_addr{};
 	server_addr.sin_family = AF_INET;
@@ -216,6 +213,24 @@ bool Server::isNicknameInUse(const std::string& nickname) const {
 			return true ;
 	}
 	return false ;
+}
+
+void Server::disconnectClient(int fd) {
+	auto clientIt = _clients.find(fd);
+	if (clientIt != _clients.end()) {
+		std::cout << "Disconnecting client " << fd << " (authentication failed)" << std::endl;
+		removeClientFromAllChannels(&clientIt->second);
+	
+	// remove from poll array too
+	for (auto it = _fds.begin(); it != _fds.end(); ++it) {
+		if (it->fd == fd) {
+			_fds.erase(it);
+			break;
+		}
+	}
+	close(fd);
+	_clients.erase(clientIt);
+	}
 }
 
 void Server::cleanup() {

@@ -24,8 +24,12 @@ void CommandHandler::handlePass(Client& client, const std::vector<std::string>& 
 	}
 	if (params[0] != _password) {
 		sendNumeric(client, 464, ":Password incorrect");  // ERR_PASSWDMISMATCH
+		_server->disconnectClient(client.getFd());
 		return;
+
 	}
+
+	
 	client.setPassed(true);
 }
 

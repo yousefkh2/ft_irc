@@ -24,6 +24,7 @@ public:
 	bool isNicknameInUse(const std::string& nickname) const;
 	//broadcasting
 	void broadcastToClientChannels(Client* client, const std::string& message, CommandHandler& handler);
+	void disconnectClient(int fd);
 	
 	// forbid copying and assignment
     Server(const Server&) = delete;

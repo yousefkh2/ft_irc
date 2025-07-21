@@ -9,6 +9,7 @@
 #include "../include/Server.hpp"
 #include "../include/Utils.hpp"
 #include <sys/socket.h>
+#include <sstream>
 
 
 using Params = std::vector<std::string>;
