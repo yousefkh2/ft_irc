@@ -72,14 +72,10 @@ std::string joinMsg = ":" + nick + "!" + user + "@" + client.hostname() + " JOIN
 sendToChannel(channel, joinMsg);
 
 // Send topic if it exists
-if (channel->getTopic().empty()) {
-  sendNumeric(client, 331, channelName + " :No topic is set");
-  std::string noticeMsg = ":server NOTICE " + channelName + " :No topic is set for this channel";
-  sendToChannel(channel, noticeMsg);
-  std::cout << "Sent 331 RPL_NOTOPIC for " << channelName << " to " << nick << std::endl;
+if (!channel->getTopic().empty()) {
+  sendToClient(client, "332 " + nick + " " + channelName + " :" + channel->getTopic());
 } else {
-  sendNumeric(client, 332, channelName + " :" + channel->getTopic());
-  std::cout << "Sent 332 RPL_TOPIC for " << channelName << " to " << nick << std::endl;
+  sendToClient(client, "331 " + nick + " " + channelName + " :No topic is set");
 }
 // Send names list (list of users in channel)
 std::string namesList = "353 " + nick + " = " + channelName + " :";
