@@ -6,12 +6,15 @@ std::vector<Command> Parser::parse(std::string &data, size_t &used) {
   std::vector<Command> commands;
   size_t pos = 0;
   while (true) {
-    auto line_end = data.find("\r\n", pos);
+    size_t line_end = data.find("\n", pos);
     if (line_end == std::string::npos)
-      break; // no complete line left
-
-    std::string line = data.substr(pos, line_end - pos); // extract the line (without "\r\n")
-    pos = line_end + 2;                   // skip past "\r\n"
+      break;
+    
+    std::string line = data.substr(pos, line_end - pos);
+    if (!line.empty() && line.back() == '\r')
+        line.pop_back();
+    
+    pos = line_end + 1;               
 
     if (line.empty())
       continue; // skip blank lines
