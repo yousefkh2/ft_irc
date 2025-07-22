@@ -216,7 +216,16 @@ void CommandHandler::handleKick(Client& client, const std::vector<std::string>& 
   }
   std::string channelName = params[0];
   std::string targetNick = params[1];
-  std::string kickMessage = params.size() > 2 ? params[2] : client.nickname();
+  std::string kickReason = "No reason given";
+  if (params.size() > 2) {
+    kickReason = params[2];
+    if (kickReason[0] == ':') {
+      kickReason = kickReason.substr(1);
+    }
+    for (size_t i = 3; i < params.size(); ++i) {
+      kickReason += " " + params[i];
+    }
+  }
   if (!isValidChannelName(channelName)) {
     sendNumeric(client, 403, channelName + " :No such channel");
     return ;
@@ -249,16 +258,19 @@ void CommandHandler::handleKick(Client& client, const std::vector<std::string>& 
     sendNumeric(client, 484, channelName + " :Cannot kick yourself");
     return ;
   }
-  std::string kickMsg = ":" + client.nickname() + "!" + client.username() + " @" + client.hostname() + " KICK " + channelName + " " + targetNick;
-  if (!kickMessage.empty())
-    kickMsg += " :" + kickMessage;
+  std::string kickMsg = ":" + client.nickname() + "!" + client.username() + "@" + client.hostname() 
+  + " KICK " + channelName + " " + targetNick + " :" + kickReason;
   sendToChannel(channel, kickMsg);
-  channel->removeClient(targetClient);
-  if (channel->getClientCount() == 0) {
-    _server->removeChannel(channelName);
+  if (channel->isOperator(targetClient)) {
+    channel->removeOperator(targetClient);
   }
-
-    std::cout << "Client " << client.nickname() << " kicked " << targetNick << " from " << channelName << std::endl;
+  if (channel->isInvited(targetClient)) {
+    channel->removeInvitedClient(targetClient);
+  }
+  channel->removeClient(targetClient);
+  targetClient->leaveChannel(channelName);
+  std::cout << "Client " << client.nickname() << " kicked " << targetNick 
+    << " from " << channelName << std::endl;
 }
 
 void CommandHandler::handleInvite(Client& client, const std::vector<std::string>& params) {
