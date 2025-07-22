@@ -59,6 +59,11 @@ void CommandHandler::handlePrivmsg(Client& client, const std::vector<std::string
 				sendNumeric(client, 404, target + " :No such channel"); // ERR_CANNOTSENDTOCHAN
 				continue ;
 			}
+
+			if (!channel->hasClient(&client)) {
+                sendNumeric(client, 404, target + " :Cannot send to channel"); // ERR_CANNOTSENDTOCHAN
+                continue;
+			}
 			std::string fullMsg = ":" + client.nickname() + "!" + 
 								client.username() + "@" + client.hostname() + " PRIVMSG " + target + " :" + params[1] + "\r\n";
 			// send to all channel members except sender
