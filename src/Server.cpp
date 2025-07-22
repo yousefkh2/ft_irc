@@ -133,7 +133,7 @@ void Server::handleClientData(size_t idx) {
 	auto clientIt = _clients.find(fd);
 		if (clientIt != _clients.end()) {
 				if (clientIt->second.isRegistered()) {
-					std::string quitMsg = ":" + clientIt->second.nickname() + "!" + clientIt->second.username() + "@localhost QUIT :Connection lost";
+					std::string quitMsg = ":" + clientIt->second.nickname() + "!" + clientIt->second.username() + "@localhost QUIT :Connection lost\r\n";
 					broadcastToClientChannels(&clientIt->second, quitMsg, _handler);
 				}
 				removeClientFromAllChannels(&clientIt->second);
@@ -256,7 +256,7 @@ void Server::broadcastToClientChannels(Client * client, const std::string& messa
 		Channel& channel = channelPair.second;
 		if (channel.hasClient(client)) {
 			for (Client* c : channel.getClients()) {
-				handler.sendToClient(*c, message);
+				handler.sendRaw(*c, message);
 			}
 		}
 	}
