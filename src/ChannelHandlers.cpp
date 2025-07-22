@@ -73,9 +73,10 @@ sendToChannel(channel, joinMsg);
 
 // Send topic if it exists
 if (!channel->getTopic().empty()) {
-sendToClient(client, "332 " + nick + " " + channelName + " :" + channel->getTopic());
+  sendToClient(client, "332 " + nick + " " + channelName + " :" + channel->getTopic());
+} else {
+  sendToClient(client, "331 " + nick + " " + channelName + " :No topic is set");
 }
-
 // Send names list (list of users in channel)
 std::string namesList = "353 " + nick + " = " + channelName + " :";
 for (Client *c : channel->getClients()) {
@@ -200,8 +201,13 @@ void CommandHandler::handleTopic(Client& client, const std::vector<std::string>&
   }
   channel->setTopic(newTopic);
   std::string user = client.username();
-  std::string topicMsg = ":" + nick + "!" + user + " @" + client.hostname() + " TOPIC " + channelName + " :" + newTopic;
+  std::string topicMsg = ":" + nick + "!" + user + "@" + client.hostname() + " TOPIC " + channelName + " :" + newTopic + "\r\n";
   sendToChannel(channel, topicMsg);
+  if (channel->getTopic().empty()) {
+    sendToClient(client, ":server 331 " + nick + " " + channelName + " :No topic is set");
+  } else {
+    sendToClient(client, ":server 332 " + nick + " " + channelName + " :" + channel->getTopic());
+  }
   std::cout << "Topic for " << channelName << " changed by " << nick << " to: " << newTopic << std::endl;
 }
 
@@ -260,13 +266,13 @@ void CommandHandler::handleKick(Client& client, const std::vector<std::string>& 
   }
   std::string kickMsg = ":" + client.nickname() + "!" + client.username() + "@" + client.hostname() 
   + " KICK " + channelName + " " + targetNick + " :" + kickReason;
-  sendToChannel(channel, kickMsg);
   if (channel->isOperator(targetClient)) {
     channel->removeOperator(targetClient);
   }
   if (channel->isInvited(targetClient)) {
     channel->removeInvitedClient(targetClient);
   }
+  sendToChannel(channel, kickMsg);
   channel->removeClient(targetClient);
   targetClient->leaveChannel(channelName);
   std::cout << "Client " << client.nickname() << " kicked " << targetNick 
