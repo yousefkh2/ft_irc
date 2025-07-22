@@ -72,10 +72,15 @@ std::string joinMsg = ":" + nick + "!" + user + "@" + client.hostname() + " JOIN
 sendToChannel(channel, joinMsg);
 
 // Send topic if it exists
-if (!channel->getTopic().empty()) {
-sendToClient(client, "332 " + nick + " " + channelName + " :" + channel->getTopic());
+if (channel->getTopic().empty()) {
+  sendNumeric(client, 331, channelName + " :No topic is set");
+  std::string noticeMsg = ":server NOTICE " + channelName + " :No topic is set for this channel";
+  sendToChannel(channel, noticeMsg);
+  std::cout << "Sent 331 RPL_NOTOPIC for " << channelName << " to " << nick << std::endl;
+} else {
+  sendNumeric(client, 332, channelName + " :" + channel->getTopic());
+  std::cout << "Sent 332 RPL_TOPIC for " << channelName << " to " << nick << std::endl;
 }
-
 // Send names list (list of users in channel)
 std::string namesList = "353 " + nick + " = " + channelName + " :";
 for (Client *c : channel->getClients()) {
@@ -200,8 +205,13 @@ void CommandHandler::handleTopic(Client& client, const std::vector<std::string>&
   }
   channel->setTopic(newTopic);
   std::string user = client.username();
-  std::string topicMsg = ":" + nick + "!" + user + " @" + client.hostname() + " TOPIC " + channelName + " :" + newTopic;
+  std::string topicMsg = ":" + nick + "!" + user + "@" + client.hostname() + " TOPIC " + channelName + " :" + newTopic + "\r\n";
   sendToChannel(channel, topicMsg);
+  if (channel->getTopic().empty()) {
+    sendToClient(client, ":server 331 " + nick + " " + channelName + " :No topic is set");
+  } else {
+    sendToClient(client, ":server 332 " + nick + " " + channelName + " :" + channel->getTopic());
+  }
   std::cout << "Topic for " << channelName << " changed by " << nick << " to: " << newTopic << std::endl;
 }
 
@@ -266,9 +276,9 @@ void CommandHandler::handleKick(Client& client, const std::vector<std::string>& 
   if (channel->isInvited(targetClient)) {
     channel->removeInvitedClient(targetClient);
   }
+  sendToChannel(channel, kickMsg);
   channel->removeClient(targetClient);
   targetClient->leaveChannel(channelName);
-  sendToChannel(channel, kickMsg);
   std::cout << "Client " << client.nickname() << " kicked " << targetNick 
     << " from " << channelName << std::endl;
 }
