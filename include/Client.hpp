@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <set>
 
 class Client {
 public:
@@ -29,6 +30,13 @@ public:
 
 	bool isRegistered() const;
 
+	// Channel addings
+	void joinChannel(const std::string& channelName);
+	void leaveChannel(const std::string& channelName);
+	void leaveAllChannels();
+	bool isInChannel(const std::string& channelName) const;
+	const std::set<std::string>& getChannels() const;
+
 private:
 	int _fd;
 	std::string _buffer;
@@ -40,4 +48,6 @@ private:
 	bool _passed = false;
 	bool _nickSet = false;
 	bool _userSet = false;
+
+	std::set<std::string> _channels;
 };

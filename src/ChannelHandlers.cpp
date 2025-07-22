@@ -1,4 +1,5 @@
 #include "../include/CommandHandler.hpp"
+#include "../include/Client.hpp"
 #include "../include/Server.hpp"
 
 void CommandHandler::handleJoin(Client &client,
@@ -57,6 +58,7 @@ if (channel->isInviteOnly() && !channel->isInvited(&client)) {
 }
 
 channel->addClient(&client);
+client.joinChannel(channelName);
 
 // If user was invited, remove them from the invited list (they're now in the channel)
 if (channel->isInvited(&client)) {
@@ -125,14 +127,14 @@ void CommandHandler::handlePart(Client& client, const std::vector<std::string>& 
 
     std::string nick = client.nickname();
     std::string user = client.username();
-    std::string partMsg = ":" + nick + "!" + user + " @" + client.hostname() + " PART " + channelName;
+    std::string partMsg = ":" + nick + "!" + user + "@" + client.hostname() + " PART " + channelName;
     if (!partMessage.empty())
       partMsg += " :" + partMessage;
     sendToChannel(channel, partMsg);
 
     bool wasOperator = channel->isOperator(&client);
     channel->removeClient(&client);
-
+    client.leaveChannel(channelName);
 	
     if (wasOperator && channel->getClientCount() > 0) {
         Client* newOp = *channel->getClients().begin();
