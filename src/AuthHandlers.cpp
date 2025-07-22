@@ -58,7 +58,8 @@ void CommandHandler::handleNick(Client& client, const std::vector<std::string>& 
 		return;
 	}
 	const std::string& requestedNick = params[0];
-	if (requestedNick.empty() || requestedNick.length() > MAX_NICK_LEN) {
+	if (requestedNick.empty() || requestedNick.length() > MAX_NICK_LEN || 
+        requestedNick.find(' ') != std::string::npos || requestedNick[0] == '#') {
 		sendNumeric(client, 432, requestedNick + " :Erroneous nickname"); //ERR_ERRONEUSNICKNAME
 		return ;
 	}

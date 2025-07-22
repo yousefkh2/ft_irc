@@ -8,6 +8,7 @@
 #include <iostream>
 #include <netinet/in.h>
 #include <stdexcept>
+#include <string>
 #include <sys/fcntl.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -131,6 +132,10 @@ void Server::handleClientData(size_t idx) {
 		std::cout << "Client " << fd << " disconnected\n";
 	auto clientIt = _clients.find(fd);
 		if (clientIt != _clients.end()) {
+				if (clientIt->second.isRegistered()) {
+					std::string quitMsg = ":" + clientIt->second.nickname() + "!" + clientIt->second.username() + "@localhost QUIT :Connection lost";
+					broadcastToClientChannels(&clientIt->second, quitMsg, _handler);
+				}
 				removeClientFromAllChannels(&clientIt->second);
 	}
 		close(fd);
@@ -149,14 +154,14 @@ void Server::handleClientData(size_t idx) {
 
 	buf.erase(0, used); // erases from position 0 (beginning of string) up to position used (erases complete commands)
 	for (auto &cmd : cmds) {
-		std::cout << "Parsed command: " << cmd.name;
-		if (!cmd.params.empty()) {
-			std::cout << " [";
-			for (auto &p : cmd.params)
-			std::cout << p << " ";
-			std::cout << "]";
-		}
-		std::cout << std::endl;
+		// std::cout << "Parsed command: " << cmd.name;
+		// if (!cmd.params.empty()) {
+		// 	std::cout << " [";
+		// 	for (auto &p : cmd.params)
+		// 	std::cout << p << " ";
+		// 	std::cout << "]";
+		// }
+		// std::cout << std::endl;
 		_handler.handle(client, cmd);
 	}
 }

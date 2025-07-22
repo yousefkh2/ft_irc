@@ -72,8 +72,9 @@ void CommandHandler::sendWelcomeSequence(Client& client) {
 }
 
   void CommandHandler::handle(Client& client, const Command& cmd) {
-	std::cout << "Handler processing: " << cmd.name << std::endl;
-
+		if (cmd.name != "PING") {
+        std::cout << "Handler processing: " << cmd.name << std::endl;
+    		}
 		bool wasRegistered = client.isRegistered();
 		std::string upperCmd = toUpperIrc(cmd.name);
 
