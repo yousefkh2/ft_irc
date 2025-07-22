@@ -104,3 +104,7 @@ void CommandHandler::sendWelcomeSequence(Client& client) {
 
 
 
+void CommandHandler::sendRaw(Client& client, const std::string& line)
+{
+    send(client.getFd(), line.c_str(), line.size(), 0);
+}

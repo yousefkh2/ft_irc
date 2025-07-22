@@ -23,6 +23,7 @@ class CommandHandler {
 	*/
 	void handle(Client& client, const Command& cmd);
 	void sendToClient(Client& client, const std::string& message);
+	void sendRaw(Client& client, const std::string& line);
 
 	private:
 	void handlePing(Client& client, const std::vector<std::string>& params);
