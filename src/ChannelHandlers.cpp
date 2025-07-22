@@ -260,7 +260,6 @@ void CommandHandler::handleKick(Client& client, const std::vector<std::string>& 
   }
   std::string kickMsg = ":" + client.nickname() + "!" + client.username() + "@" + client.hostname() 
   + " KICK " + channelName + " " + targetNick + " :" + kickReason;
-  sendToChannel(channel, kickMsg);
   if (channel->isOperator(targetClient)) {
     channel->removeOperator(targetClient);
   }
@@ -269,6 +268,7 @@ void CommandHandler::handleKick(Client& client, const std::vector<std::string>& 
   }
   channel->removeClient(targetClient);
   targetClient->leaveChannel(channelName);
+  sendToChannel(channel, kickMsg);
   std::cout << "Client " << client.nickname() << " kicked " << targetNick 
     << " from " << channelName << std::endl;
 }
