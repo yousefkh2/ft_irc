@@ -75,7 +75,7 @@ void CommandHandler::handleNick(Client& client, const std::vector<std::string>& 
 	client.setNickSet(true);
 
 	if (client.isRegistered() && !oldNick.empty() && oldNick != requestedNick) {
-		std::string nickMsg = ":" + oldNick + "!" + client.username() + "@localhost NICK :" + requestedNick;
+		std::string nickMsg = ":" + oldNick + "!" + client.username() + "@localhost NICK :" + requestedNick + "\r\n";
 		_server->broadcastToClientChannels(&client, nickMsg, *this);
 	}
 	std::cout << "Client " << client.getFd()
