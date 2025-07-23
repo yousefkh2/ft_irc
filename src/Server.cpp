@@ -133,7 +133,7 @@ void Server::handleClientData(size_t idx) {
 	auto clientIt = _clients.find(fd);
 		if (clientIt != _clients.end()) {
 				if (clientIt->second.isRegistered()) {
-					std::string quitMsg = ":" + clientIt->second.nickname() + "!" + clientIt->second.username() + "@localhost QUIT :Connection lost\r\n";
+					std::string quitMsg = ":" + clientIt->second.nickname() + "!" + clientIt->second.username() + "@" + clientIt->second.hostname() + " QUIT :Connection lost\r\n";
 					broadcastToClientChannels(&clientIt->second, quitMsg, _handler);
 				}
 				removeClientFromAllChannels(&clientIt->second);
