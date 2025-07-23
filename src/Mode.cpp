@@ -183,7 +183,7 @@ void CommandHandler::handleChannelKeyMode(Client& client, Channel* channel, bool
             return;
         }
         channel->setKey(key);
-        std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@localhost MODE " + channel->getName() + " +k " + key;
+        std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@localhost MODE " + channel->getName() + " +k";
         sendToChannel(channel, modeMsg);
         std::cout << "Channel " << channel->getName() << " key set by " << client.nickname() << std::endl;
     } else {
