@@ -3,112 +3,84 @@
 #include "../include/Server.hpp"
 
 void CommandHandler::handleJoin(Client &client,
-																const std::vector<std::string> &params)
+  const std::vector<std::string> &params)
 {
-	if (!client.isRegistered())
-	{
-		sendNumeric(client, 451, ":You have not registered");
-		return;
-	}
-
-	if (params.empty())
-	{
-		sendNumeric(client, 461, "JOIN :Not enough parameters");
-		return;
-	}
-
-	std::string channelName = params[0];
-	std::string channelKey = params.size() > 1 ? params[1] : "";
-	if (!isValidChannelName(channelName))
-	{
-		sendNumeric(client, 403, channelName + " :No such channel");
-		return;
-	}
-
-	Channel *channel = _server->getChannel(channelName);
-	if (!channel)
-	{
-		channel = _server->createChannel(channelName);
-	}
-
-	// Add null pointer check after channel creation
-	if (!channel)
-	{
-		sendNumeric(client, 403, channelName + " :Channel creation failed");
-		return;
-	}
-
-	if (channel->hasClient(&client))
-	{
-		return;
-	}
-
-	if (channel->hasKey())
-	{
-		if (channelKey.empty() || channelKey != channel->getKey())
-		{
-			sendNumeric(client, 475, channelName + " :Cannot join channel, password protected");
-			return;
-		}
-	}
-
-	if (channel->hasUserLimit())
-	{
-		if (channel->getClientCount() >= channel->getUserLimit())
-		{
-			sendNumeric(client, 471, channelName + " :Cannot join channel due to limit restriction");
-			return;
-		}
-	}
-
-	if (channel->isInviteOnly() && !channel->isInvited(&client))
-	{
-		sendNumeric(client, 473, channelName + " :Cannot join channel due to invite only mode");
-		return;
-	}
-
-	channel->addClient(&client);
-	client.joinChannel(channelName);
-
-	// If user was invited, remove them from the invited list (they're now in the channel)
-	if (channel->isInvited(&client))
-	{
-		channel->removeInvitedClient(&client);
-	}
-	std::string nick = client.nickname();
-	std::string user = client.username();
-
-	// Send JOIN message to all clients in channel (including the joiner)
-	std::string joinMsg = ":" + nick + "!" + user + "@" + client.hostname() + " JOIN " + channelName;
-	sendToChannel(channel, joinMsg);
-
-	// Send topic if it exists
-	if (!channel->getTopic().empty())
-	{
-		sendToClient(client, "332 " + nick + " " + channelName + " :" + channel->getTopic());
-	}
-	else
-	{
-		sendToClient(client, "331 " + nick + " " + channelName + " :No topic is set");
-	}
-	// Send names list (list of users in channel)
-	std::string namesList = "353 " + nick + " = " + channelName + " :";
-	for (Client *c : channel->getClients())
-	{
-		// Add null pointer check for clients in channel
-		if (c && !c->nickname().empty())
-		{
-			if (channel->isOperator(c))
-			{
-				namesList += "@"; // @ prefix for operators
-			}
-			namesList += c->nickname() + " ";
-		}
-	}
-	sendToClient(client, namesList);
-	sendToClient(client, "366 " + nick + " " + channelName + " :End of /NAMES list");
-
-	std::cout << "Client " << nick << " joined channel " << channelName << std::endl;
+  if (!client.isRegistered()) {
+    sendNumeric(client, 451, ":You have not registered");
+    return;
+  }
+  if (params.empty()) {
+    sendNumeric(client, 461, "JOIN :Not enough parameters");
+    return;
+  }
+  std::cout << "JOIN parameters: ";
+  for (size_t i = 0; i < params.size(); ++i) {
+    std::cout << "[" << i << "]=\"" << params[i] << "\" ";
+  }
+  std::cout << std::endl;
+  std::vector<std::string> channelNames;
+  std::vector<std::string> channelKeys;
+  std::string channelsParam = params[0];
+  size_t keyStartIndex = 1;
+  for (size_t i = 1; i < params.size(); ++i) {
+    if (!params[i].empty() && (params[i][0] == '#' || params[i-1].back() == ',')) {
+      if (!channelsParam.empty() && channelsParam.back() != ',') {
+        channelsParam += ",";
+      }
+      channelsParam += params[i];
+      keyStartIndex = i + 1;
+    } else {
+      break;
+    }
+  }
+  std::cout << "Reconstructed channels param: \"" << channelsParam << "\"" << std::endl;
+  size_t start = 0;
+  size_t end = channelsParam.find(',');
+  while (end != std::string::npos) {
+    std::string channelName = channelsParam.substr(start, end - start);
+    channelName.erase(0, channelName.find_first_not_of(" \t"));
+    channelName.erase(channelName.find_last_not_of(" \t") + 1);
+    if (!channelName.empty()) {
+      channelNames.push_back(channelName);
+      std::cout << "Added channel: \"" << channelName << "\"" << std::endl;
+    }
+    start = end + 1;
+    end = channelsParam.find(',', start);
+  }
+  std::string lastChannel = channelsParam.substr(start);
+  lastChannel.erase(0, lastChannel.find_first_not_of(" \t"));
+  lastChannel.erase(lastChannel.find_last_not_of(" \t") + 1);
+  if (!lastChannel.empty()) {
+    channelNames.push_back(lastChannel);
+    std::cout << "Added last channel: \"" << lastChannel << "\"" << std::endl;
+  }
+  if (keyStartIndex < params.size()) {
+    std::string keysParam = params[keyStartIndex];
+    for (size_t i = keyStartIndex + 1; i < params.size(); ++i) {
+      keysParam += "," + params[i];
+    }
+    size_t start = 0;
+    size_t end = keysParam.find(',');
+    while (end != std::string::npos) {
+      std::string key = keysParam.substr(start, end - start);
+      key.erase(0, key.find_first_not_of(" \t"));
+      key.erase(key.find_last_not_of(" \t") + 1);
+      channelKeys.push_back(key);
+      start = end + 1;
+      end = keysParam.find(',', start);
+    }
+    std::string lastKey = keysParam.substr(start);
+    lastKey.erase(0, lastKey.find_first_not_of(" \t"));
+    lastKey.erase(lastKey.find_last_not_of(" \t") + 1);
+    channelKeys.push_back(lastKey);
+  }
+  std::cout << "Total channels to join: " << channelNames.size() << std::endl;
+  for (size_t i = 0; i < channelNames.size(); ++i) {
+    std::string currentChannel = channelNames[i];
+    std::string currentKey = (i < channelKeys.size()) ? channelKeys[i] : "";
+    std::cout << "Attempting to join channel: \"" << currentChannel << "\"" << std::endl;
+    joinSingleChannel(client, currentChannel, currentKey);
+  }
 }
 
 void CommandHandler::handlePart(Client &client, const std::vector<std::string> &params)
@@ -357,7 +329,7 @@ void CommandHandler::handleInvite(Client &client, const std::vector<std::string>
 	}
 	if (!channel->isOperator(&client))
 	{
-		sendNumeric(client, 482, channelName + " :You are not channel operator");
+		sendNumeric(client, 482, channelName + " :You're not channel operator");
 		return;
 	}
 	Client *targetClient = nullptr;

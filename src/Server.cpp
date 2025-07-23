@@ -41,7 +41,6 @@ void Server::initSocket() {
 			_server_fd, SOL_SOCKET, SO_REUSEADDR, &opt,
 			sizeof(opt)); // allow re-binding after the socket closes without waiting
 
-	// make server socket non-blocking
 	setNonBlocking(_server_fd);
 
 	
@@ -127,7 +126,7 @@ void Server::acceptNewClient() {
 void Server::handleClientData(size_t idx) {
 	int fd = _fds[idx].fd;
 	char buffer[512]; // 512 is max len of a single IRC message as per IRC 1459
-	int n = recv(fd, buffer, sizeof(buffer), 0); // recv is the network version of read()
+	int n = recv(fd, buffer, sizeof(buffer), 0);
 	if (n <= 0) {
 		std::cout << "Client " << fd << " disconnected\n";
 	auto clientIt = _clients.find(fd);
@@ -166,7 +165,6 @@ void Server::handleClientData(size_t idx) {
 	}
 }
 
-// Returns pointer to existing channel, or nullptr if not found
 Channel* Server::getChannel(const std::string& name)
 {
 	auto it = _channels.find(name);
@@ -175,25 +173,23 @@ Channel* Server::getChannel(const std::string& name)
 	return nullptr;
 }
 
-// Creates a new channel with given name and returns pointer to it
 Channel* Server::createChannel(const std::string& name)
 {
 	if (channelExists(name))
 		return getChannel(name);
-	// Create new channel using emplace (constructs in-place)
+
 	auto result = _channels.emplace(name, Channel(name));
 	std::cout << "Created new channel: " << name << std::endl;
 	return &result.first->second; // iterator->second is the Channel object
 }
 
-// Removes a channel if it exists and is empty
 void Server::removeChannel(const std::string& name)
 {
 	auto it = _channels.find(name);
 	if (it != _channels.end())
 	{
 		Channel& channel = it->second;
-		if (channel.getClientCount() == 0) // Only remove if channel is empty
+		if (channel.getClientCount() == 0)
 		{
 			std::cout << "Removing empty channel: " << name << std::endl;
 			_channels.erase(it);

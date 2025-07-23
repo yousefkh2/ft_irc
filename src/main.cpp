@@ -4,11 +4,10 @@
 #include <atomic>
 #include <csignal>
 
-std::atomic<bool> g_running = true;
+
 
 void signalHandler(int signum) {
   (void)signum;
-  g_running = false;
 }
 
 int main(int argc, char *argv[]) {

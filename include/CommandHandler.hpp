@@ -33,13 +33,15 @@ class CommandHandler {
 	void handleUser(Client& client, const std::vector<std::string>& params);
 	void sendWelcomeSequence(Client& client);
 	void sendNumeric(Client& client, int code, const std::string& message);
-	void handleJoin(Client& client, const std::vector<std::string>& params);
+	void handleJoin(Client &client, const std::vector<std::string> &params);
 	void handlePart(Client& client, const std::vector<std::string>& params);
 	void handleTopic(Client& client, const std::vector<std::string>& params);
 	void handleKick(Client& client, const std::vector<std::string>& params);
 	void handleInvite(Client& client, const std::vector<std::string>& params);
 	void handleMode(Client& client, const std::vector<std::string>& params);
 	void handlePrivmsg(Client& client, const std::vector<std::string>& params);
+	void handleWho(Client& client, const std::vector<std::string>& params);
+	void joinSingleChannel(Client &client, const std::string &channelName, const std::string &channelKey);
 
 	// Utility functions
     void sendToChannel(Channel* channel, const std::string& message, Client* exclude = nullptr);
