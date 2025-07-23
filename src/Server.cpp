@@ -243,6 +243,7 @@ void Server::cleanup() {
 		close(pfd.fd);
 	}
 	_fds.clear();
+	_clients.clear();
 }
 
 const std::unordered_map<int, Client>& Server::getClients() const {
