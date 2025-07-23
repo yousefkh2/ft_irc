@@ -52,6 +52,7 @@ class CommandHandler {
 	void handleOperatorMode(Client& client, Channel* channel, bool adding, const std::string& targetNick);
     void handleChannelKeyMode(Client& client, Channel* channel, bool adding, const std::string& key);
     void handleUserLimitMode(Client& client, Channel* channel, bool adding, const std::string& limitStr);
+	void handleWho(Client& client, const std::vector<std::string>& params);
 
 	std::string _password;
 	Server* _server;

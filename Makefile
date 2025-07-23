@@ -13,7 +13,8 @@ SRCS = src/main.cpp \
 	src/Utils.cpp \
 	src/Helpers.cpp \
 	src/Mode.cpp \
-	src/cmdPrivmsg.cpp
+	src/cmdPrivmsg.cpp \
+	src/cmdWho.cpp
 
 OBJDIR = objs
 OBJS = $(SRCS:src/%.cpp=$(OBJDIR)/%.o)

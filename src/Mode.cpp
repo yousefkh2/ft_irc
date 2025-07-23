@@ -5,7 +5,7 @@
 void CommandHandler::handleMode(Client& client, const std::vector<std::string>& params) {
     if (!client.isRegistered()) {
         sendNumeric(client, 451, ":You have not registered");
-        return ;
+        return;
     }
     if (params.empty()) {
         sendNumeric(client, 461, "MODE :Not enough parameters");
@@ -15,6 +15,16 @@ void CommandHandler::handleMode(Client& client, const std::vector<std::string>& 
     if (isValidChannelName(target)) {
         handleChannelMode(client, params);
     } else {
+        // Handle user modes
+        if (target == client.nickname()) {
+            if (params.size() == 1) {
+                // Query user modes
+                sendNumeric(client, 221, "+");
+            } else {
+                sendNumeric(client, 221, "+");
+            }
+            return;
+        }
         sendNumeric(client, 502, ":Cannot change mode for other users");
     }
 }
@@ -30,7 +40,7 @@ void CommandHandler::handleChannelMode(Client& client, const std::vector<std::st
         sendNumeric(client, 442, channelName + " :You're not on that channel");
         return;
     }
-    if (params.size() == 1) { // Shoz current mode if nothing provided
+    if (params.size() == 1) {
         std::string modeString = "+";
         std::string modeParams = "";
         if (channel->isInviteOnly())
@@ -44,7 +54,7 @@ void CommandHandler::handleChannelMode(Client& client, const std::vector<std::st
             modeParams += " " + std::to_string(channel->getUserLimit());
         }
         if (modeString == "+")
-            modeString = "+"; // Nothing set
+            modeString = "+";
         sendNumeric(client, 324, channelName + " " + modeString + modeParams);
         return ;
     }
@@ -106,6 +116,9 @@ void CommandHandler::handleChannelMode(Client& client, const std::vector<std::st
                     handleUserLimitMode(client, channel, false, "");
                 }
                 break ;
+            case 'b':
+                sendNumeric(client, 368, channelName + " :End of channel ban list");
+                break;
             default:
                 sendNumeric(client, 472, channelName + " :Unknown mode char");
                 break;
