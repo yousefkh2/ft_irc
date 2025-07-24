@@ -13,11 +13,11 @@ void CommandHandler::handleJoin(Client &client,
     sendNumeric(client, 461, "JOIN :Not enough parameters");
     return;
   }
-  std::cout << "JOIN parameters: ";
-  for (size_t i = 0; i < params.size(); ++i) {
-    std::cout << "[" << i << "]=\"" << params[i] << "\" ";
-  }
-  std::cout << std::endl;
+//   std::cout << "JOIN parameters: ";
+//   for (size_t i = 0; i < params.size(); ++i) {
+//     std::cout << "[" << i << "]=\"" << params[i] << "\" ";
+//   }
+//   std::cout << std::endl;
   std::vector<std::string> channelNames;
   std::vector<std::string> channelKeys;
   std::string channelsParam = params[0];
@@ -33,7 +33,7 @@ void CommandHandler::handleJoin(Client &client,
       break;
     }
   }
-  std::cout << "Reconstructed channels param: \"" << channelsParam << "\"" << std::endl;
+//   std::cout << "Reconstructed channels param: \"" << channelsParam << "\"" << std::endl;
   size_t start = 0;
   size_t end = channelsParam.find(',');
   while (end != std::string::npos) {
@@ -52,7 +52,7 @@ void CommandHandler::handleJoin(Client &client,
   lastChannel.erase(lastChannel.find_last_not_of(" \t") + 1);
   if (!lastChannel.empty()) {
     channelNames.push_back(lastChannel);
-    std::cout << "Added last channel: \"" << lastChannel << "\"" << std::endl;
+    // std::cout << "Added last channel: \"" << lastChannel << "\"" << std::endl;
   }
   if (keyStartIndex < params.size()) {
     std::string keysParam = params[keyStartIndex];
@@ -74,11 +74,11 @@ void CommandHandler::handleJoin(Client &client,
     lastKey.erase(lastKey.find_last_not_of(" \t") + 1);
     channelKeys.push_back(lastKey);
   }
-  std::cout << "Total channels to join: " << channelNames.size() << std::endl;
+//   std::cout << "Total channels to join: " << channelNames.size() << std::endl;
   for (size_t i = 0; i < channelNames.size(); ++i) {
     std::string currentChannel = channelNames[i];
     std::string currentKey = (i < channelKeys.size()) ? channelKeys[i] : "";
-    std::cout << "Attempting to join channel: \"" << currentChannel << "\"" << std::endl;
+    // std::cout << "Attempting to join channel: \"" << currentChannel << "\"" << std::endl;
     joinSingleChannel(client, currentChannel, currentKey);
   }
 }

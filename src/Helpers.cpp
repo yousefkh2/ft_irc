@@ -105,7 +105,7 @@ void CommandHandler::joinSingleChannel(Client &client, const std::string &channe
 	}
 	else
 	{
-		sendToClient(client, "331 " + nick + " " + channelName + " :No topic is set");
+		sendToClient(client, "331 " + nick + " " + channelName + " :No topic is set");	
 	}
 	std::string namesList = "353 " + nick + " = " + channelName + " :";
 	for (Client *c : channel->getClients())
@@ -119,7 +119,8 @@ void CommandHandler::joinSingleChannel(Client &client, const std::string &channe
 			namesList += c->nickname() + " ";
 		}
 	}
-	sendToChannel(channel, namesList);
+	// sendToChannel(channel, namesList);
+	sendToClient(client, namesList);
 	sendToClient(client, "366 " + nick + " " + channelName + " :End of /NAMES list");
 	std::cout << "Client " << nick << " joined channel " + channelName << std::endl;
 }
