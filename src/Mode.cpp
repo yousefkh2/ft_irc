@@ -5,7 +5,7 @@
 void CommandHandler::handleMode(Client& client, const std::vector<std::string>& params) {
     if (!client.isRegistered()) {
         sendNumeric(client, 451, ":You have not registered");
-        return ;
+        return;
     }
     if (params.empty()) {
         sendNumeric(client, 461, "MODE :Not enough parameters");
@@ -15,6 +15,16 @@ void CommandHandler::handleMode(Client& client, const std::vector<std::string>& 
     if (isValidChannelName(target)) {
         handleChannelMode(client, params);
     } else {
+        // Handle user modes
+        if (target == client.nickname()) {
+            if (params.size() == 1) {
+                // Query user modes
+                sendNumeric(client, 221, "+");
+            } else {
+                sendNumeric(client, 221, "+");
+            }
+            return;
+        }
         sendNumeric(client, 502, ":Cannot change mode for other users");
     }
 }
@@ -30,7 +40,7 @@ void CommandHandler::handleChannelMode(Client& client, const std::vector<std::st
         sendNumeric(client, 442, channelName + " :You're not on that channel");
         return;
     }
-    if (params.size() == 1) { // Shoz current mode if nothing provided
+    if (params.size() == 1) {
         std::string modeString = "+";
         std::string modeParams = "";
         if (channel->isInviteOnly())
@@ -44,7 +54,7 @@ void CommandHandler::handleChannelMode(Client& client, const std::vector<std::st
             modeParams += " " + std::to_string(channel->getUserLimit());
         }
         if (modeString == "+")
-            modeString = "+"; // Nothing set
+            modeString = "+";
         sendNumeric(client, 324, channelName + " " + modeString + modeParams);
         return ;
     }
@@ -106,6 +116,9 @@ void CommandHandler::handleChannelMode(Client& client, const std::vector<std::st
                     handleUserLimitMode(client, channel, false, "");
                 }
                 break ;
+            case 'b':
+                sendNumeric(client, 368, channelName + " :End of channel ban list");
+                break;
             default:
                 sendNumeric(client, 472, channelName + " :Unknown mode char");
                 break;
@@ -116,7 +129,7 @@ void CommandHandler::handleChannelMode(Client& client, const std::vector<std::st
 void CommandHandler::handleInviteOnlyMode(Client& client, Channel* channel, bool adding) {
     if (adding != channel->isInviteOnly()) {
         channel->setInviteOnly(adding);
-        std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@localhost MODE " + channel->getName() + " " + (adding ? "+i" : "-i");
+        std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@" + client.hostname() + " MODE " + channel->getName() + " " + (adding ? "+i" : "-i");
         sendToChannel(channel, modeMsg);
         std::cout << "Channel " << channel->getName() << " invite-only mode " << (adding ? "enabled" : "disabled") << " by " << client.nickname() << std::endl;
     }
@@ -125,7 +138,7 @@ void CommandHandler::handleInviteOnlyMode(Client& client, Channel* channel, bool
 void CommandHandler::handleTopicRestrictionMode(Client& client, Channel* channel, bool adding) {
     if (adding != channel->hasTopicRestriction()) {
         channel->setTopicRestriction(adding);
-        std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@localhost MODE " + channel->getName() + " " + (adding ? "+t" : "-t");
+        std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@" + client.hostname() + " MODE " + channel->getName() + " " + (adding ? "+t" : "-t");
         sendToChannel(channel, modeMsg);
         std::cout << "Channel " << channel->getName() << " topic restriction " << (adding ? "enabled" : "disabled") << " by " << client.nickname() << std::endl;
     }
@@ -140,13 +153,13 @@ void CommandHandler::handleOperatorMode(Client& client, Channel* channel, bool a
         }
     }
     if (!targetClient) {
-        sendNumeric(client, 401, targetNick + " :No such cik/channel");
+        sendNumeric(client, 401, targetNick + " :No such nick/channel");
         return ;
     }
     if (adding) {
         if (!channel->isOperator(targetClient)) {
             channel->addOperator(targetClient);
-            std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@localhost MODE " + channel->getName() + " +o " + targetNick;
+            std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@" + client.hostname() + " MODE " + channel->getName() + " +o " + targetNick;
             sendToChannel(channel, modeMsg);
             std::cout << "Client " << targetNick << " given operator privileges in " << channel->getName() << " by " << client.nickname() << std::endl;
         }
@@ -165,7 +178,7 @@ void CommandHandler::handleOperatorMode(Client& client, Channel* channel, bool a
                 }
             }
             channel->removeOperator(targetClient);
-            std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@localhost MODE " +  channel->getName() + " -o " + targetNick;
+            std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@" + client.hostname() + " MODE " +  channel->getName() + " -o " + targetNick;
             sendToChannel(channel, modeMsg);
             std::cout << "Client " << targetNick << " removed operator privileges in " << channel->getName() << " by " << client.nickname() << std::endl;
         }
@@ -183,13 +196,13 @@ void CommandHandler::handleChannelKeyMode(Client& client, Channel* channel, bool
             return;
         }
         channel->setKey(key);
-        std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@localhost MODE " + channel->getName() + " +k " + key;
+        std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@" + client.hostname() + " MODE " + channel->getName() + " +k";
         sendToChannel(channel, modeMsg);
         std::cout << "Channel " << channel->getName() << " key set by " << client.nickname() << std::endl;
     } else {
         if (channel->hasKey()) {
             channel->removeKey();
-            std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@localhost MODE " + channel->getName() + " -k";
+            std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@" + client.hostname() + " MODE " + channel->getName() + " -k";
             sendToChannel(channel, modeMsg);
             std::cout << "Channel " << channel->getName() << " key removed by " << client.nickname() << std::endl;
         }
@@ -214,13 +227,13 @@ void CommandHandler::handleUserLimitMode(Client& client, Channel* channel, bool 
             return ;
         }
         channel->setUserLimit(limit);
-        std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@localhost MODE " + channel->getName() + " +l " + std::to_string(limit);
+        std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@" + client.hostname() + " MODE " + channel->getName() + " +l " + std::to_string(limit);
         sendToChannel(channel, modeMsg);
         std::cout << "Channel " << channel->getName() << " user limit set to " << limit << " by " << client.nickname() << std::endl;
     } else {
         if (channel->hasUserLimit()) {
             channel->removeUserLimit();
-            std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@localhost MODE " + channel->getName() + " -l";
+            std::string modeMsg = ":" + client.nickname() + "!" + client.username() + "@" + client.hostname() + " MODE " + channel->getName() + " -l";
             sendToChannel(channel, modeMsg);
             std::cout << "Channel " << channel->getName() << " user limit removed by " << client.nickname() << std::endl;
         }

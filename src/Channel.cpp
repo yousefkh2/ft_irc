@@ -1,4 +1,5 @@
 #include "../include/Channel.hpp"
+#include <iostream>
 
 // Constructor
 Channel::Channel(const std::string& name) : _name(name) {}

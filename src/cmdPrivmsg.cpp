@@ -59,15 +59,20 @@ void CommandHandler::handlePrivmsg(Client& client, const std::vector<std::string
 				sendNumeric(client, 404, target + " :No such channel"); // ERR_CANNOTSENDTOCHAN
 				continue ;
 			}
+
+			if (!channel->hasClient(&client)) {
+                sendNumeric(client, 404, target + " :Cannot send to channel"); // ERR_CANNOTSENDTOCHAN
+                continue;
+			}
 			std::string fullMsg = ":" + client.nickname() + "!" + 
-								client.username() + "@" + client.hostname() + " PRIVMSG " + target + " :" + params[1];
+								client.username() + "@" + client.hostname() + " PRIVMSG " + target + " :" + params[1] + "\r\n";
 			// send to all channel members except sender
 			for (const auto& member : channel->getClients()) {
 				if (member != &client) {
-					sendToClient(*member, fullMsg);
+					sendRaw(*member, fullMsg);
+					}
 				}
 			}
-		}
 		else // message to client
 		{
 			Client* targetClient = nullptr;
@@ -82,8 +87,8 @@ void CommandHandler::handlePrivmsg(Client& client, const std::vector<std::string
 				continue ;
 			}
 			std::string fullMsg = ":" + client.nickname() + "!" + 
-								client.username() + "@" + client.hostname() + " PRIVMSG " + target + " :" + params[1];
-			sendToClient(*targetClient, fullMsg);
+								client.username() + "@" + client.hostname() + " PRIVMSG " + target + " :" + params[1] + "\r\n";
+			sendRaw(*targetClient, fullMsg);
 		}
 	}
 	/* OUT OF SCOPE */

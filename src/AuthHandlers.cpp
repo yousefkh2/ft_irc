@@ -58,7 +58,8 @@ void CommandHandler::handleNick(Client& client, const std::vector<std::string>& 
 		return;
 	}
 	const std::string& requestedNick = params[0];
-	if (requestedNick.empty() || requestedNick.length() > MAX_NICK_LEN) {
+	if (requestedNick.empty() || requestedNick.length() > MAX_NICK_LEN || 
+        requestedNick.find(' ') != std::string::npos || requestedNick[0] == '#') {
 		sendNumeric(client, 432, requestedNick + " :Erroneous nickname"); //ERR_ERRONEUSNICKNAME
 		return ;
 	}
@@ -74,7 +75,7 @@ void CommandHandler::handleNick(Client& client, const std::vector<std::string>& 
 	client.setNickSet(true);
 
 	if (client.isRegistered() && !oldNick.empty() && oldNick != requestedNick) {
-		std::string nickMsg = ":" + oldNick + "!" + client.username() + "@localhost NICK :" + requestedNick;
+		std::string nickMsg = ":" + oldNick + "!" + client.username() + "@" + client.hostname() + " NICK :" + requestedNick + "\r\n";
 		_server->broadcastToClientChannels(&client, nickMsg, *this);
 	}
 	std::cout << "Client " << client.getFd()

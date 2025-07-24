@@ -8,6 +8,7 @@
 #include <iostream>
 #include <netinet/in.h>
 #include <stdexcept>
+#include <string>
 #include <sys/fcntl.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -40,7 +41,6 @@ void Server::initSocket() {
 			_server_fd, SOL_SOCKET, SO_REUSEADDR, &opt,
 			sizeof(opt)); // allow re-binding after the socket closes without waiting
 
-	// make server socket non-blocking
 	setNonBlocking(_server_fd);
 
 	sockaddr_in server_addr{};
@@ -122,11 +122,15 @@ void Server::acceptNewClient() {
 void Server::handleClientData(size_t idx) {
 	int fd = _fds[idx].fd;
 	char buffer[512]; // 512 is max len of a single IRC message as per IRC 1459
-	int n = recv(fd, buffer, sizeof(buffer), 0); // recv is the network version of read()
+	int n = recv(fd, buffer, sizeof(buffer), 0);
 	if (n <= 0) {
 		std::cout << "Client " << fd << " disconnected\n";
 	auto clientIt = _clients.find(fd);
 		if (clientIt != _clients.end()) {
+				if (clientIt->second.isRegistered()) {
+					std::string quitMsg = ":" + clientIt->second.nickname() + "!" + clientIt->second.username() + "@" + clientIt->second.hostname() + " QUIT :Connection lost\r\n";
+					broadcastToClientChannels(&clientIt->second, quitMsg, _handler);
+				}
 				removeClientFromAllChannels(&clientIt->second);
 	}
 		close(fd);
@@ -146,18 +150,17 @@ void Server::handleClientData(size_t idx) {
 	buf.erase(0, used); // erases from position 0 (beginning of string) up to position used (erases complete commands)
 	for (auto &cmd : cmds) {
 		// std::cout << "Parsed command: " << cmd.name;
-		if (!cmd.params.empty()) {
-			std::cout << " [";
-			for (auto &p : cmd.params)
-			std::cout << p << " ";
-			std::cout << "]";
-		}
-		std::cout << std::endl;
+		// if (!cmd.params.empty()) {
+		// 	std::cout << " [";
+		// 	for (auto &p : cmd.params)
+		// 	std::cout << p << " ";
+		// 	std::cout << "]";
+		// }
+		// std::cout << std::endl;
 		_handler.handle(client, cmd);
 	}
 }
 
-// Returns pointer to existing channel, or nullptr if not found
 Channel* Server::getChannel(const std::string& name)
 {
 	auto it = _channels.find(name);
@@ -166,25 +169,23 @@ Channel* Server::getChannel(const std::string& name)
 	return nullptr;
 }
 
-// Creates a new channel with given name and returns pointer to it
 Channel* Server::createChannel(const std::string& name)
 {
 	if (channelExists(name))
 		return getChannel(name);
-	// Create new channel using emplace (constructs in-place)
+
 	auto result = _channels.emplace(name, Channel(name));
 	std::cout << "Created new channel: " << name << std::endl;
 	return &result.first->second; // iterator->second is the Channel object
 }
 
-// Removes a channel if it exists and is empty
 void Server::removeChannel(const std::string& name)
 {
 	auto it = _channels.find(name);
 	if (it != _channels.end())
 	{
 		Channel& channel = it->second;
-		if (channel.getClientCount() == 0) // Only remove if channel is empty
+		if (channel.getClientCount() == 0)
 		{
 			std::cout << "Removing empty channel: " << name << std::endl;
 			_channels.erase(it);
@@ -234,6 +235,7 @@ void Server::cleanup() {
 		close(pfd.fd);
 	}
 	_fds.clear();
+	_clients.clear();
 }
 
 const std::unordered_map<int, Client>& Server::getClients() const {
@@ -247,7 +249,7 @@ void Server::broadcastToClientChannels(Client * client, const std::string& messa
 		Channel& channel = channelPair.second;
 		if (channel.hasClient(client)) {
 			for (Client* c : channel.getClients()) {
-				handler.sendToClient(*c, message);
+				handler.sendRaw(*c, message);
 			}
 		}
 	}

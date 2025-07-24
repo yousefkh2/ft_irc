@@ -39,7 +39,8 @@ const std::unordered_map<std::string, CmdFn> CommandHandler::_dispatch_table = {
 	{"KICK", &CommandHandler::handleKick},
 	{"INVITE", &CommandHandler::handleInvite},
 	{"MODE", &CommandHandler::handleMode},
-	{"PRIVMSG", &CommandHandler::handlePrivmsg}
+	{"PRIVMSG", &CommandHandler::handlePrivmsg},
+	{"WHO", &CommandHandler::handleWho}
 };
 
 CommandHandler::CommandHandler(const std::string& password, Server* server)
@@ -72,8 +73,9 @@ void CommandHandler::sendWelcomeSequence(Client& client) {
 }
 
   void CommandHandler::handle(Client& client, const Command& cmd) {
-	std::cout << "Handler processing: " << cmd.name << std::endl;
-
+		if (cmd.name != "PING") {
+        std::cout << "Handler processing: " << cmd.name << std::endl;
+    		}
 		bool wasRegistered = client.isRegistered();
 		std::string upperCmd = toUpperIrc(cmd.name);
 
@@ -103,3 +105,7 @@ void CommandHandler::sendWelcomeSequence(Client& client) {
 
 
 
+void CommandHandler::sendRaw(Client& client, const std::string& line)
+{
+    send(client.getFd(), line.c_str(), line.size(), 0);
+}

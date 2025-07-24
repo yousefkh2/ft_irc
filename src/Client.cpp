@@ -1,3 +1,4 @@
+#include "../include/Channel.hpp"
 #include "../include/Client.hpp"
 
 Client::Client() : _fd(-1) {}
@@ -28,4 +29,24 @@ void Client::setUserSet(bool v) { _userSet = v; }
 
 bool Client::isRegistered() const {
 	return _passed && _nickSet && _userSet;
+}
+
+void Client::joinChannel(const std::string& channelName) {
+    _channels.insert(channelName);
+}
+
+void Client::leaveChannel(const std::string& channelName) {
+    _channels.erase(channelName);
+}
+
+bool Client::isInChannel(const std::string& channelName) const {
+    return _channels.find(channelName) != _channels.end();
+}
+
+const std::set<std::string>& Client::getChannels() const {
+    return _channels;
+}
+
+void Client::leaveAllChannels() {
+    _channels.clear();
 }
