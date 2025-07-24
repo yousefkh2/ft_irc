@@ -249,7 +249,8 @@ void Server::broadcastToClientChannels(Client * client, const std::string& messa
 		Channel& channel = channelPair.second;
 		if (channel.hasClient(client)) {
 			for (Client* c : channel.getClients()) {
-				handler.sendRaw(*c, message);
+				if (c != client)
+					handler.sendRaw(*c, message);
 			}
 		}
 	}
