@@ -7,7 +7,6 @@
 class Channel
 {
     public:
-        // Constructor: creates a new channel with given name
         Channel(const std::string& name);
     
         //basic channel infos
@@ -16,26 +15,25 @@ class Channel
         const std::string& getTopic() const;
         void setTopic(const std::string& topic);
 
-        //Managing members inside the channel
-        void addClient(Client* client);        // Adds a client to the channel (first becomes operator)
+    
+        void addClient(Client* client);       
         void removeClient(Client* client);
-        bool hasClient(Client* client) const;  // Checks if client is in this channel
-        const std::set<Client*>& getClients() const; // Returns all clients in channel
+        bool hasClient(Client* client) const;
+        const std::set<Client*>& getClients() const; 
         size_t getClientCount() const;
 
-        // Channel modes (for future expansion)
         bool isInviteOnly() const;
-        void setInviteOnly(bool inviteOnly);   // Sets invite-only mode on/off
-        bool hasTopicRestriction() const;      // Returns true if only ops can change topic
-        void setTopicRestriction(bool restriction); // Sets topic restriction on/off
+        void setInviteOnly(bool inviteOnly);   
+        bool hasTopicRestriction() const;      
+        void setTopicRestriction(bool restriction); 
         void addInvitedClient(Client* client);
         bool isInvited(Client* client) const;
         void removeInvitedClient(Client* client);
 
         // Operator management
-        bool isOperator(Client* client) const; // Checks if client has operator privileges
-        void addOperator(Client* client);      // Gives operator privileges to client
-        void removeOperator(Client* client);   // Removes operator privileges from client
+        bool isOperator(Client* client) const; 
+        void addOperator(Client* client);      
+        void removeOperator(Client* client); 
 
         // Channel password part
 	    bool hasKey() const;

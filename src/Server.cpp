@@ -43,10 +43,6 @@ void Server::initSocket() {
 	// make server socket non-blocking
 	setNonBlocking(_server_fd);
 
-	
-
-	
-
 	sockaddr_in server_addr{};
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_addr.s_addr = INADDR_ANY;
@@ -149,7 +145,7 @@ void Server::handleClientData(size_t idx) {
 
 	buf.erase(0, used); // erases from position 0 (beginning of string) up to position used (erases complete commands)
 	for (auto &cmd : cmds) {
-		std::cout << "Parsed command: " << cmd.name;
+		// std::cout << "Parsed command: " << cmd.name;
 		if (!cmd.params.empty()) {
 			std::cout << " [";
 			for (auto &p : cmd.params)
